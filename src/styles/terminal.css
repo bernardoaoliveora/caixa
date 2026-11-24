@@ -1,0 +1,2119 @@
+/* ==========================================================================
+   TERMINAL DE AUTOATENDIMENTO — SUPERMERCADO HORIZONTE (REDESIGN IHC)
+   Conceito Visual:
+   - Fundo claro (#F4F6F9 / #FFFFFF)
+   - Azul escuro como cor principal (#0B2545 / #13315C)
+   - Verde para confirmações (#15803D / #16A34A)
+   - Vermelho para ações de remoção (#B91C1C / #DC2626)
+   - Layout horizontal touchscreen com alvos grandes (Lei de Fitts)
+   ========================================================================== */
+
+:root {
+  --bg-page: #E8EEF5;
+  --bg-terminal: #F5F7FA;
+  --bg-surface: #FFFFFF;
+  --bg-surface-subtle: #F8FAFC;
+
+  --navy-900: #0A1E3C;
+  --navy-800: #0F2942;
+  --navy-700: #163A5F;
+  --navy-600: #1E4E79;
+  --navy-100: #E0EBF5;
+  --navy-50: #F0F6FC;
+
+  --green-700: #15803D;
+  --green-600: #16A34A;
+  --green-100: #DCFCE7;
+  --green-50: #F0FDF4;
+
+  --red-700: #B91C1C;
+  --red-600: #DC2626;
+  --red-500: #EF4444;
+  --red-100: #FEE2E2;
+  --red-50: #FEF2F2;
+
+  --amber-700: #B45309;
+  --amber-600: #D97706;
+  --amber-100: #FEF3C7;
+  --amber-50: #FFFBEB;
+
+  --text-primary: #0F172A;
+  --text-secondary: #334155;
+  --text-muted: #64748B;
+
+  --border-light: #CBD5E1;
+  --border-subtle: #E2E8F0;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+
+  --shadow-card: 0 2px 8px rgba(15, 41, 66, 0.06), 0 1px 2px rgba(15, 41, 66, 0.04);
+  --shadow-elevated: 0 12px 28px rgba(10, 30, 60, 0.14), 0 4px 10px rgba(10, 30, 60, 0.08);
+  --shadow-modal: 0 24px 48px rgba(10, 30, 60, 0.28);
+
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+  font-family: var(--font-sans);
+  background-color: var(--bg-page);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  touch-action: manipulation;
+}
+
+button:focus-visible {
+  outline: 3px solid var(--navy-600);
+  outline-offset: 2px;
+}
+
+/* ==========================================================================
+   MOLDURA DO TERMINAL HORIZONTAL
+   ========================================================================== */
+
+.kiosk-shell {
+  min-height: 100vh;
+  max-width: 1560px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-terminal);
+  box-shadow: 0 0 40px rgba(10, 30, 60, 0.12);
+  border-left: 1px solid var(--border-light);
+  border-right: 1px solid var(--border-light);
+}
+
+/* ==========================================================================
+   CABEÇALHO DO TERMINAL (Azul Escuro Principal)
+   ========================================================================== */
+
+.terminal-header {
+  background: var(--navy-900);
+  color: #FFFFFF;
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 4px solid var(--navy-700);
+  flex-wrap: wrap;
+}
+
+.terminal-header__brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.brand-logo {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  background: var(--navy-700);
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FFFFFF;
+  flex-shrink: 0;
+}
+
+.brand-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.brand-name {
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #FFFFFF;
+}
+
+.terminal-id-badge {
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #F8FAFC;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 999px;
+  letter-spacing: 0.03em;
+}
+
+.brand-subtitle {
+  font-size: 0.82rem;
+  color: #CBD5E1;
+  margin-top: 2px;
+}
+
+/* Indicador Luminoso de Status do Caixa */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-badge--normal {
+  background: rgba(22, 163, 74, 0.2);
+  border: 1px solid rgba(74, 222, 128, 0.45);
+  color: #DCFCE7;
+}
+.status-badge--normal .status-dot {
+  background: #4ADE80;
+  box-shadow: 0 0 8px #4ADE80;
+}
+
+.status-badge--warning {
+  background: rgba(217, 119, 6, 0.28);
+  border: 1px solid rgba(251, 191, 36, 0.65);
+  color: #FEF3C7;
+  animation: pulse-border 1.6s infinite;
+}
+.status-badge--warning .status-dot {
+  background: #FBBF24;
+  box-shadow: 0 0 10px #FBBF24;
+}
+
+.status-badge--danger {
+  background: rgba(220, 38, 38, 0.35);
+  border: 1px solid rgba(248, 113, 113, 0.8);
+  color: #FEE2E2;
+  animation: pulse-border 1.2s infinite;
+}
+.status-badge--danger .status-dot {
+  background: #F87171;
+  box-shadow: 0 0 10px #F87171;
+}
+
+/* Botões de Controle Rápido para Demonstração IHC */
+.terminal-header__controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.header-ctrl-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  min-height: 38px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #F8FAFC;
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.header-ctrl-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.header-ctrl-btn:active {
+  transform: scale(0.97);
+}
+
+.header-ctrl-btn--guide {
+  background: #1D4ED8;
+  border-color: #60A5FA;
+}
+
+.header-ctrl-btn--warn {
+  background: rgba(217, 119, 6, 0.25);
+  border-color: rgba(251, 191, 36, 0.45);
+  color: #FEF3C7;
+}
+
+.header-ctrl-btn--danger {
+  background: rgba(220, 38, 38, 0.25);
+  border-color: rgba(248, 113, 113, 0.45);
+  color: #FEE2E2;
+}
+
+.header-ctrl-btn--icon {
+  padding: 8px 10px;
+}
+
+.header-divider {
+  width: 1px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.2);
+  margin: 0 2px;
+}
+
+/* ==========================================================================
+   BARRA DE FEEDBACK DE CANCELAMENTO E ORIENTAÇÃO NA TELA PRINCIPAL
+   ========================================================================== */
+
+.inline-cancel-feedback-bar {
+  background: var(--green-50);
+  border-bottom: 2px solid var(--green-600);
+  padding: 10px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  color: #064E3B;
+}
+
+.inline-cancel-feedback-bar__left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.inline-feedback-icon {
+  color: var(--green-600);
+  display: flex;
+  align-items: center;
+}
+
+.inline-feedback-texts {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 0.95rem;
+}
+
+.inline-feedback-guidance {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #FFFFFF;
+  border: 1px solid var(--green-600);
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-weight: 600;
+  color: var(--navy-900);
+}
+
+.inline-cancel-feedback-bar__right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.inline-feedback-tray-btn {
+  background: var(--green-600);
+  color: #FFFFFF;
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 7px 14px;
+  border-radius: var(--radius-sm);
+}
+
+.inline-feedback-close {
+  color: #065F46;
+  padding: 4px;
+  border-radius: 6px;
+}
+
+/* ==========================================================================
+   LAYOUT HORIZONTAL PRINCIPAL DA TELA TOUCHSCREEN
+   ========================================================================== */
+
+.terminal-main-screen {
+  display: grid;
+  grid-template-columns: 1fr 410px;
+  gap: 18px;
+  padding: 16px 24px;
+  flex: 1;
+  min-height: 0;
+}
+
+.terminal-left-column {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.panel-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-card__header {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--bg-surface-subtle);
+  border-top-left-radius: var(--radius-lg);
+  border-top-right-radius: var(--radius-lg);
+}
+
+.panel-card__header--compact {
+  padding: 10px 18px;
+}
+
+.panel-card__title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--navy-900);
+}
+
+.panel-card__title--sm {
+  font-size: 0.96rem;
+  font-weight: 700;
+  color: var(--navy-900);
+}
+
+.panel-card__hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--navy-700);
+  margin-top: 3px;
+}
+
+.items-count-pill {
+  background: var(--navy-100);
+  color: var(--navy-900);
+  font-weight: 700;
+  font-size: 0.88rem;
+  padding: 6px 14px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   LISTA DE PRODUTOS REGISTRADOS (OPÇÃO A — TOQUE DIRETO NO PRODUTO)
+   ========================================================================== */
+
+.product-list-panel {
+  flex: 1;
+}
+
+.empty-cart-state {
+  padding: 36px 24px;
+  text-align: center;
+  color: var(--text-secondary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.empty-cart-state__icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--navy-50);
+  color: var(--navy-700);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty-cart-state h3 {
+  font-size: 1.15rem;
+  color: var(--navy-900);
+}
+
+.empty-cart-state p {
+  font-size: 0.94rem;
+  max-width: 440px;
+  line-height: 1.45;
+}
+
+.registered-items-list {
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 330px;
+  overflow-y: auto;
+}
+
+.registered-item {
+  border: 2px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: #FFFFFF;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+.registered-item:hover {
+  border-color: var(--navy-600);
+}
+
+.registered-item--selected {
+  border-color: var(--navy-800);
+  background: var(--navy-50);
+  box-shadow: 0 4px 14px rgba(15, 41, 66, 0.1);
+}
+
+.registered-item--just-scanned {
+  border-color: var(--green-600);
+}
+
+.registered-item__main {
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+}
+
+.registered-item__index {
+  font-family: var(--font-mono);
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: var(--bg-terminal);
+  padding: 6px 8px;
+  border-radius: 6px;
+}
+
+.registered-item__emoji {
+  font-size: 1.85rem;
+  line-height: 1;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-surface-subtle);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+
+.registered-item__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.registered-item__title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.registered-item__name {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.registered-item__tag {
+  background: var(--amber-100);
+  color: var(--amber-700);
+  border: 1px solid #FCD34D;
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.registered-item__meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+.meta-dot {
+  color: var(--border-light);
+}
+
+.registered-item__touch-cue {
+  color: var(--navy-700);
+  font-weight: 600;
+  font-size: 0.82rem;
+}
+
+.registered-item__price-col {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.registered-item__subtotal {
+  font-family: var(--font-mono);
+  font-size: 1.18rem;
+  font-weight: 700;
+  color: var(--navy-900);
+}
+
+.registered-item__scanned-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--green-700);
+  background: var(--green-100);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+/* Gaveta que abre ao tocar no produto na lista (Opção A -> "Remover produto") */
+.registered-item__drawer {
+  padding: 12px 16px;
+  background: #FFFFFF;
+  border-top: 1px dashed var(--border-light);
+  border-bottom-left-radius: var(--radius-md);
+  border-bottom-right-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.drawer-quantity-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.drawer-label {
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.qty-stepper {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--bg-surface-subtle);
+}
+
+.qty-btn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--navy-900);
+  background: #FFFFFF;
+  transition: background 0.15s;
+}
+
+.qty-btn:hover {
+  background: var(--navy-100);
+}
+
+.qty-value {
+  min-width: 40px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.98rem;
+}
+
+.btn-remove-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--red-600);
+  color: #FFFFFF;
+  font-size: 0.98rem;
+  font-weight: 700;
+  padding: 12px 22px;
+  min-height: 48px;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 3px 8px rgba(220, 38, 38, 0.25);
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.btn-remove-inline:hover {
+  background: var(--red-700);
+}
+
+.btn-remove-inline:active {
+  transform: scale(0.98);
+}
+
+/* ==========================================================================
+   HISTÓRICO DE PRODUTOS CANCELADOS (SEÇÃO 7)
+   ========================================================================== */
+
+.canceled-history-panel {
+  background: #FFFDFD;
+  border-color: #FECACA;
+}
+
+.header-with-icon {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.text-danger {
+  color: var(--red-600);
+}
+
+.text-navy {
+  color: var(--navy-900);
+}
+
+.canceled-count-pill {
+  background: var(--red-100);
+  color: var(--red-700);
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+.canceled-history__empty {
+  padding: 12px 18px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.canceled-history__list {
+  padding: 8px 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 125px;
+  overflow-y: auto;
+}
+
+.canceled-history__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--red-50);
+  border: 1px solid #FECACA;
+}
+
+.canceled-history__item--pending-tray {
+  background: var(--amber-50);
+  border-color: #F59E0B;
+}
+
+.canceled-item__left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.canceled-item__emoji {
+  font-size: 1.25rem;
+}
+
+.canceled-item__details {
+  display: flex;
+  flex-direction: column;
+}
+
+.canceled-item__name {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-decoration: line-through;
+}
+
+.canceled-item__meta {
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+}
+
+.canceled-item__right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+}
+
+.canceled-item__price {
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--red-700);
+}
+
+.canceled-item__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.73rem;
+  font-weight: 600;
+  color: var(--green-700);
+}
+
+.canceled-item__tray-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--amber-600);
+  color: #FFFFFF;
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 6px;
+}
+
+/* ==========================================================================
+   COLUNA DIREITA: RESUMO, VALOR TOTAL E BOTÃO FIXO "CANCELAR PRODUTO"
+   ========================================================================== */
+
+.checkout-summary-column {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.summary-total-card {
+  background: var(--navy-900);
+  color: #FFFFFF;
+  padding: 20px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-elevated);
+  border: 2px solid var(--navy-700);
+}
+
+.summary-total-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.summary-total-card__label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #93C5FD;
+}
+
+.summary-total-card__badge {
+  background: rgba(255, 255, 255, 0.14);
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+.summary-total-card__amount {
+  font-family: var(--font-mono);
+  font-size: 2.55rem;
+  font-weight: 800;
+  margin: 10px 0 12px;
+  letter-spacing: -0.03em;
+  color: #FFFFFF;
+}
+
+.summary-total-card__meta {
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  padding-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.84rem;
+  color: #CBD5E1;
+}
+
+.summary-meta-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.summary-meta-row--abated {
+  color: #FCA5A5;
+}
+
+/* Botão Fixo "Cancelar produto" (Opção B) */
+.fixed-cancel-section {
+  background: var(--bg-surface);
+  border: 2px solid #FECACA;
+  border-radius: var(--radius-lg);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: var(--shadow-card);
+}
+
+.fixed-cancel-section__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.option-pill {
+  font-size: 0.74rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border-radius: 999px;
+  letter-spacing: 0.03em;
+}
+
+.option-pill--b {
+  background: var(--red-100);
+  color: var(--red-700);
+}
+
+.fixed-cancel-section__caption {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+}
+
+.btn-fixed-cancel {
+  width: 100%;
+  min-height: 76px;
+  padding: 14px 18px;
+  border-radius: var(--radius-md);
+  background: var(--red-600);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+  box-shadow: 0 6px 16px rgba(220, 38, 38, 0.28);
+  transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+}
+
+.btn-fixed-cancel:hover {
+  background: var(--red-700);
+  box-shadow: 0 8px 20px rgba(185, 28, 28, 0.35);
+}
+
+.btn-fixed-cancel:active {
+  transform: scale(0.985);
+}
+
+.btn-fixed-cancel--disabled {
+  background: #94A3B8;
+  box-shadow: none;
+  opacity: 0.85;
+}
+
+.btn-fixed-cancel--disabled:hover {
+  background: #64748B;
+  box-shadow: none;
+}
+
+.btn-fixed-cancel__icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.btn-fixed-cancel__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.btn-fixed-cancel__title {
+  font-size: 1.22rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.btn-fixed-cancel__subtitle {
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.empty-cancel-alert {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--red-50);
+  border: 1px solid var(--red-500);
+  color: var(--red-700);
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+/* Botões de Finalizar Compra e Ajuda */
+.primary-actions-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.btn-finish-purchase {
+  width: 100%;
+  min-height: 70px;
+  padding: 14px 18px;
+  border-radius: var(--radius-md);
+  background: var(--green-600);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+  box-shadow: 0 6px 16px rgba(22, 163, 74, 0.25);
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.btn-finish-purchase:hover:not(:disabled) {
+  background: var(--green-700);
+}
+
+.btn-finish-purchase:disabled {
+  background: #CBD5E1;
+  color: #64748B;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.btn-finish-purchase__content {
+  display: flex;
+  flex-direction: column;
+}
+
+.btn-finish-purchase__title {
+  font-size: 1.18rem;
+  font-weight: 800;
+}
+
+.btn-finish-purchase__subtitle {
+  font-size: 0.82rem;
+  opacity: 0.92;
+}
+
+.btn-call-attendant {
+  width: 100%;
+  min-height: 46px;
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  background: #FFFFFF;
+  border: 2px solid var(--navy-700);
+  color: var(--navy-900);
+  font-size: 0.9rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.15s ease;
+}
+
+.btn-call-attendant:hover {
+  background: var(--navy-50);
+}
+
+.security-footer-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  padding: 4px 6px;
+}
+
+/* ==========================================================================
+   ESTAÇÕES FÍSICAS DO TERMINAL (1. LEITOR | 2. ENSACAMENTO | 3. BANDEJA CANCELADOS)
+   ========================================================================== */
+
+.physical-hardware-zones {
+  display: grid;
+  grid-template-columns: 1.35fr 0.85fr 0.95fr;
+  gap: 16px;
+  padding: 14px 24px 20px;
+  background: #E2E8F0;
+  border-top: 3px solid var(--border-light);
+}
+
+.hardware-zone {
+  background: #FFFFFF;
+  border: 2px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: var(--shadow-card);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hardware-zone--scanner.scanner-flash {
+  border-color: var(--green-600);
+  box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.2);
+}
+
+.hardware-zone--canceled-tray {
+  background: #FFF9F9;
+  border: 2px dashed var(--red-600);
+}
+
+.hardware-zone--canceled-tray-highlight {
+  border: 3px solid var(--red-600);
+  background: #FEF2F2;
+  box-shadow: 0 0 0 6px rgba(220, 38, 38, 0.2);
+  animation: pulse-tray 1.4s infinite;
+}
+
+.hardware-zone__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.hardware-zone__title-wrap {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.hardware-zone__icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.hardware-zone__icon--blue {
+  background: var(--navy-100);
+  color: var(--navy-800);
+}
+
+.hardware-zone__icon--green {
+  background: var(--green-100);
+  color: var(--green-700);
+}
+
+.hardware-zone__icon--red {
+  background: var(--red-600);
+  color: #FFFFFF;
+}
+
+.hardware-zone__title {
+  font-size: 0.94rem;
+  font-weight: 800;
+  color: var(--navy-900);
+}
+
+.hardware-zone__title--tray {
+  color: var(--red-700);
+  letter-spacing: 0.03em;
+}
+
+.tray-header-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tray-physical-tag {
+  background: var(--red-100);
+  color: var(--red-700);
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 999px;
+}
+
+.hardware-zone__subtitle {
+  font-size: 0.77rem;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+/* Janela visual do Scanner */
+.scanner-window-indicator {
+  background: var(--navy-900);
+  color: #E2E8F0;
+  padding: 5px 10px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 0.73rem;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+}
+
+.laser-line {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #EF4444;
+  box-shadow: 0 0 8px #EF4444;
+}
+
+/* Grade de produtos para passar no leitor */
+.catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 7px;
+}
+
+.catalog-product-btn {
+  background: var(--bg-surface-subtle);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  padding: 7px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 4px;
+  position: relative;
+  transition: all 0.14s ease;
+}
+
+.catalog-product-btn:hover {
+  border-color: var(--navy-700);
+  background: var(--navy-50);
+  transform: translateY(-1px);
+}
+
+.catalog-product-btn:active {
+  transform: scale(0.96);
+}
+
+.catalog-product-btn__emoji {
+  font-size: 1.35rem;
+}
+
+.catalog-product-btn__info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.catalog-product-btn__name {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.15;
+}
+
+.catalog-product-btn__price {
+  font-family: var(--font-mono);
+  font-size: 0.71rem;
+  font-weight: 700;
+  color: var(--navy-700);
+}
+
+.catalog-product-btn__add {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  color: var(--navy-600);
+  opacity: 0.65;
+}
+
+/* Superfícies Físicas (Balança de Ensacamento vs Bandeja de Cancelados) */
+.scale-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  font-weight: 700;
+  padding: 4px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.scale-pill--ok {
+  background: var(--green-100);
+  color: var(--green-700);
+}
+
+.scale-pill--tray {
+  background: var(--red-100);
+  color: var(--red-700);
+}
+
+.physical-surface {
+  flex: 1;
+  min-height: 92px;
+  border-radius: var(--radius-md);
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.physical-surface--bagging {
+  background: var(--green-50);
+  border: 1px solid #BBF7D0;
+}
+
+.physical-surface--canceled {
+  background: #FFFFFF;
+  border: 2px solid #FECACA;
+}
+
+.physical-surface__placeholder {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 8px;
+}
+
+.physical-surface__placeholder--tray {
+  color: var(--red-700);
+  font-weight: 600;
+}
+
+.physical-tokens-grid {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  align-content: flex-start;
+}
+
+.physical-token {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.physical-token--active {
+  background: #FFFFFF;
+  border: 1px solid #86EFAC;
+  color: var(--navy-900);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.physical-token--canceled {
+  background: var(--red-100);
+  border: 1px solid var(--red-500);
+  color: var(--red-700);
+}
+
+.physical-token__qty {
+  background: rgba(0, 0, 0, 0.08);
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+}
+
+/* Banner de Orientação Física na Bandeja de Produtos Cancelados */
+.tray-guidance-banner {
+  background: #FFFFFF;
+  border: 2px solid var(--red-600);
+  border-radius: var(--radius-sm);
+  padding: 9px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tray-guidance-banner__instruction {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: var(--text-primary);
+}
+
+.bounce-arrow {
+  color: var(--red-600);
+  flex-shrink: 0;
+  animation: bounce-y 1s infinite;
+}
+
+.btn-place-in-tray {
+  width: 100%;
+  background: var(--green-600);
+  color: #FFFFFF;
+  font-size: 0.84rem;
+  font-weight: 700;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.15s;
+}
+
+.btn-place-in-tray:hover {
+  background: var(--green-700);
+}
+
+/* ==========================================================================
+   JANELAS MODAIS (OPÇÃO B, CONFIRMAÇÃO DE CANCELAMENTO, SUCESSO E EXCEÇÕES)
+   ========================================================================== */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 30, 60, 0.68);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 1000;
+  animation: fade-in 0.16s ease-out;
+}
+
+.modal-window {
+  background: #FFFFFF;
+  width: 100%;
+  max-width: 620px;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-modal);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border: 2px solid var(--border-light);
+}
+
+.modal-window--lg {
+  max-width: 720px;
+}
+
+.modal-window__header {
+  padding: 20px 24px;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.modal-window__header--navy {
+  background: var(--navy-900);
+}
+
+.modal-window__header--danger {
+  background: var(--red-700);
+  justify-content: flex-start;
+}
+
+.modal-window__header--success {
+  background: var(--green-700);
+  justify-content: flex-start;
+}
+
+.modal-window__header--warning {
+  background: var(--amber-700);
+  justify-content: flex-start;
+}
+
+.modal-header-icon-wrap {
+  width: 54px;
+  height: 54px;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.modal-step-tag {
+  display: inline-block;
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.9;
+  margin-bottom: 3px;
+}
+
+.modal-window__title {
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+
+.modal-window__subtitle {
+  font-size: 0.88rem;
+  opacity: 0.9;
+  margin-top: 3px;
+}
+
+.modal-close-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.14);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-window__body {
+  padding: 22px 24px;
+  max-height: 65vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Lista de seleção de produtos no Modal da Opção B */
+.cancel-selection-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cancel-selection-card {
+  width: 100%;
+  padding: 14px 18px;
+  border: 2px solid var(--border-light);
+  border-radius: var(--radius-md);
+  background: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  text-align: left;
+  transition: all 0.14s ease;
+}
+
+.cancel-selection-card:hover {
+  border-color: var(--red-600);
+  background: var(--red-50);
+}
+
+.cancel-selection-card__left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cancel-selection-card__index {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.cancel-selection-card__emoji {
+  font-size: 1.75rem;
+}
+
+.cancel-selection-card__info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cancel-selection-card__name {
+  font-size: 1.04rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.cancel-selection-card__meta {
+  font-size: 0.86rem;
+  color: var(--text-secondary);
+}
+
+.cancel-selection-card__right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.cancel-selection-card__price {
+  font-family: var(--font-mono);
+  font-size: 1.12rem;
+  font-weight: 800;
+  color: var(--navy-900);
+}
+
+.cancel-selection-card__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--red-600);
+  color: #FFFFFF;
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+}
+
+/* Etapa 4: Confirmação de Cancelamento */
+.confirm-question {
+  font-size: 1.28rem;
+  font-weight: 800;
+  color: var(--navy-900);
+  text-align: center;
+  line-height: 1.35;
+}
+
+.confirm-product-summary {
+  background: var(--bg-surface-subtle);
+  border: 2px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.confirm-product-summary__emoji {
+  font-size: 3rem;
+  width: 76px;
+  height: 76px;
+  background: #FFFFFF;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.confirm-product-summary__details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.confirm-detail-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.confirm-detail-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+
+.confirm-detail-value {
+  font-size: 1.15rem;
+  color: var(--text-primary);
+}
+
+.confirm-detail-value--name {
+  font-size: 1.22rem;
+  color: var(--navy-900);
+}
+
+.confirm-detail-value--price {
+  font-family: var(--font-mono);
+  font-size: 1.3rem;
+  color: var(--red-700);
+}
+
+.confirm-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.confirm-detail-box {
+  background: #FFFFFF;
+  border: 1px solid var(--border-subtle);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.confirm-safety-note {
+  text-align: center;
+  font-size: 0.86rem;
+  color: var(--text-secondary);
+}
+
+/* Etapa 5: Cancelamento Realizado + Orientação Física */
+.success-summary-banner {
+  background: var(--green-50);
+  border: 1px solid #86EFAC;
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.success-summary-banner__item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.96rem;
+  border-bottom: 1px solid #BBF7D0;
+  padding-bottom: 8px;
+}
+
+.success-summary-banner__totals {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.95rem;
+}
+
+.physical-guidance-box {
+  background: #FEF2F2;
+  border: 2px solid var(--red-600);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.physical-guidance-box__icon {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-md);
+  background: var(--red-600);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.physical-guidance-box__tag {
+  display: inline-block;
+  background: var(--red-100);
+  color: var(--red-700);
+  font-size: 0.74rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-bottom: 4px;
+}
+
+.physical-guidance-box__instruction {
+  font-size: 1.18rem;
+  font-weight: 800;
+  color: var(--navy-900);
+  line-height: 1.3;
+}
+
+.physical-guidance-box__desc {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.visual-map-diagram {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: var(--bg-surface-subtle);
+  border: 1px solid var(--border-subtle);
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.diagram-node {
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+}
+
+.diagram-node--bag {
+  background: var(--green-100);
+  color: var(--green-700);
+}
+
+.diagram-node--tray {
+  background: var(--red-600);
+  color: #FFFFFF;
+}
+
+.diagram-arrow {
+  color: var(--navy-700);
+  font-weight: 800;
+}
+
+/* Rodapés e Botões dos Modais */
+.modal-window__footer {
+  padding: 16px 24px;
+  background: var(--bg-surface-subtle);
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 14px;
+}
+
+.modal-window__footer--split {
+  justify-content: space-between;
+}
+
+.modal-window__footer--column {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.btn-modal-back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 54px;
+  padding: 12px 24px;
+  border-radius: var(--radius-md);
+  background: #FFFFFF;
+  border: 2px solid var(--navy-800);
+  color: var(--navy-900);
+  font-size: 1.02rem;
+  font-weight: 700;
+  transition: background 0.15s;
+}
+
+.btn-modal-back:hover {
+  background: var(--navy-50);
+}
+
+.btn-modal-back--lg {
+  flex: 1;
+}
+
+.btn-modal-confirm-cancel {
+  flex: 1.3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 56px;
+  padding: 14px 26px;
+  border-radius: var(--radius-md);
+  background: var(--red-600);
+  color: #FFFFFF;
+  font-size: 1.08rem;
+  font-weight: 800;
+  box-shadow: 0 6px 16px rgba(220, 38, 38, 0.3);
+  transition: background 0.15s, transform 0.1s;
+}
+
+.btn-modal-confirm-cancel:hover {
+  background: var(--red-700);
+}
+
+.btn-place-tray-primary {
+  width: 100%;
+  min-height: 58px;
+  padding: 14px 22px;
+  border-radius: var(--radius-md);
+  background: var(--green-600);
+  color: #FFFFFF;
+  font-size: 1.05rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 6px 16px rgba(22, 163, 74, 0.25);
+}
+
+.btn-place-tray-primary:hover {
+  background: var(--green-700);
+}
+
+.btn-simulate-discrepancy {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--amber-50);
+  border: 1px dashed var(--amber-600);
+  color: var(--amber-700);
+  font-size: 0.82rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-simulate-discrepancy:hover {
+  background: var(--amber-100);
+}
+
+/* Exceções e Pagamento */
+.exception-message-card {
+  background: var(--amber-50);
+  border: 1px solid #F59E0B;
+  border-radius: var(--radius-md);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.exception-message-card__main {
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: var(--navy-900);
+  line-height: 1.4;
+}
+
+.exception-details-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.88rem;
+  border-top: 1px solid rgba(217, 119, 6, 0.25);
+  padding-top: 10px;
+}
+
+.exception-detail-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.exception-ihc-note {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  background: var(--navy-50);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  border-left: 4px solid var(--navy-700);
+}
+
+.btn-employee-unlock {
+  width: 100%;
+  min-height: 54px;
+  background: var(--navy-900);
+  color: #FFFFFF;
+  font-size: 1rem;
+  font-weight: 800;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.btn-employee-unlock:hover {
+  background: var(--navy-700);
+}
+
+/* Recibo / Cupom Final */
+.receipt-box {
+  background: var(--bg-surface-subtle);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.receipt-box__header {
+  text-align: center;
+  border-bottom: 1px dashed var(--border-light);
+  padding-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.receipt-box__section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.receipt-box__section h4 {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+
+.receipt-box__section--canceled {
+  background: var(--red-50);
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+}
+
+.receipt-line {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.92rem;
+}
+
+.receipt-line--canceled {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+.receipt-line--saved {
+  color: var(--red-700);
+  border-top: 1px dashed #FECACA;
+  padding-top: 6px;
+  margin-top: 4px;
+}
+
+.receipt-box__total {
+  border-top: 2px solid var(--navy-900);
+  padding-top: 12px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 1.25rem;
+  color: var(--navy-900);
+}
+
+.btn-finish-new {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 52px;
+  padding: 12px 22px;
+  background: var(--green-600);
+  color: #FFFFFF;
+  font-size: 0.98rem;
+  font-weight: 800;
+  border-radius: var(--radius-md);
+}
+
+.guide-steps-list {
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.guide-step-item {
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: var(--text-primary);
+}
+
+/* ==========================================================================
+   ANIMAÇÕES E RESPONSIVIDADE
+   ========================================================================== */
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pulse-tray {
+  0%,
+  100% {
+    box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(220, 38, 38, 0.08);
+  }
+}
+
+@keyframes pulse-border {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.72;
+  }
+}
+
+@keyframes bounce-y {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(4px);
+  }
+}
+
+@media (max-width: 1180px) {
+  .terminal-main-screen {
+    grid-template-columns: 1fr 360px;
+  }
+  .physical-hardware-zones {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 860px) {
+  .terminal-main-screen {
+    grid-template-columns: 1fr;
+  }
+  .catalog-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
