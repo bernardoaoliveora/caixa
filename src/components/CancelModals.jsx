@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Trash2,
   ArrowLeft,
@@ -7,6 +7,8 @@ import {
   PackageX,
   ArrowDownCircle,
   X,
+  Plus,
+  Minus,
 } from 'lucide-react';
 import { formatCurrency } from '../data/products';
 
@@ -94,14 +96,43 @@ export function CancelSelectionModal({ isOpen, items, onClose, onSelectProductTo
 
 /**
  * Etapa 4 — Confirmação de cancelamento (Unificada para Opção A e Opção B):
- * Exibe Nome do produto, Quantidade, Preço e a pergunta:
+ * Permite selecionar a quantidade de unidades que serão canceladas,
+ * exibe Nome do produto, Quantidade selecionada, Preço a descontar e a pergunta:
  * "Deseja realmente remover este produto da sua compra?"
  * Botões: "Voltar" e "Confirmar cancelamento".
  */
-export function CancelConfirmationModal({ item, method, onBack, onConfirmCancel }) {
+export function CancelConfirmationModal({
+  item,
+  method,
+  initialCancelQty,
+  onBack,
+  onConfirmCancel,
+}) {
+  const [cancelQty, setCancelQty] = useState(1);
+
+  useEffect(() => {
+    if (item) {
+      const startQty =
+        initialCancelQty && initialCancelQty >= 1 && initialCancelQty <= item.quantity
+          ? initialCancelQty
+          : item.quantity;
+      setCancelQty(startQty);
+    }
+  }, [item, initialCancelQty]);
+
   if (!item) return null;
 
-  const totalItemPrice = item.price * item.quantity;
+  const maxQty = item.quantity;
+  const totalItemPrice = item.price * cancelQty;
+  const remainingQty = maxQty - cancelQty;
+
+  const handleDecrease = () => {
+    setCancelQty((prev) => Math.max(1, prev - 1));
+  };
+
+  const handleIncrease = () => {
+    setCancelQty((prev) => Math.min(maxQty, prev + 1));
+  };
 
   return (
     <div
@@ -142,16 +173,89 @@ export function CancelConfirmationModal({ item, method, onBack, onConfirmCancel 
                 <strong className="confirm-detail-value confirm-detail-value--name">
                   {item.name}
                 </strong>
+                <span className="confirm-unit-price-hint">
+                  Valor unitário: {formatCurrency(item.price)} • Registrado na compra: {maxQty}{' '}
+                  {maxQty === 1 ? 'unidade' : 'unidades'}
+                </span>
               </div>
+
+              {/* Seletor Touchscreen de Quantidade a Cancelar */}
+              <div className="confirm-qty-selector-box">
+                <div className="confirm-qty-selector-box__header">
+                  <span className="confirm-detail-label">
+                    Selecione a quantidade a cancelar:
+                  </span>
+                  {maxQty > 1 && (
+                    <div className="confirm-qty-presets">
+                      <button
+                        type="button"
+                        className={`qty-preset-pill ${
+                          cancelQty === 1 ? 'qty-preset-pill--active' : ''
+                        }`}
+                        onClick={() => setCancelQty(1)}
+                      >
+                        1 un.
+                      </button>
+                      <button
+                        type="button"
+                        className={`qty-preset-pill ${
+                          cancelQty === maxQty ? 'qty-preset-pill--active' : ''
+                        }`}
+                        onClick={() => setCancelQty(maxQty)}
+                      >
+                        Todas ({maxQty} un.)
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                <div className="confirm-qty-controls">
+                  <button
+                    type="button"
+                    className="confirm-qty-btn"
+                    onClick={handleDecrease}
+                    disabled={cancelQty <= 1}
+                    aria-label="Diminuir quantidade a cancelar"
+                  >
+                    <Minus size={22} strokeWidth={2.5} />
+                  </button>
+
+                  <div className="confirm-qty-display" aria-live="polite">
+                    <strong className="confirm-qty-display__number">{cancelQty}</strong>
+                    <span className="confirm-qty-display__label">
+                      de {maxQty} {maxQty === 1 ? 'unidade' : 'unidades'}
+                    </span>
+                  </div>
+
+                  <button
+                    type="button"
+                    className="confirm-qty-btn"
+                    onClick={handleIncrease}
+                    disabled={cancelQty >= maxQty}
+                    aria-label="Aumentar quantidade a cancelar"
+                  >
+                    <Plus size={22} strokeWidth={2.5} />
+                  </button>
+                </div>
+
+                <span className="confirm-qty-remaining-badge">
+                  {remainingQty > 0
+                    ? `Cancelamento parcial: permanecerão ${remainingQty} un. na sua compra`
+                    : 'Cancelamento total: o produto será inteiramente removido da lista'}
+                </span>
+              </div>
+
               <div className="confirm-detail-grid">
                 <div className="confirm-detail-box">
-                  <span className="confirm-detail-label">Quantidade</span>
-                  <strong className="confirm-detail-value">{item.quantity} un.</strong>
+                  <span className="confirm-detail-label">Quantidade a remover</span>
+                  <strong className="confirm-detail-value">
+                    {cancelQty} {cancelQty === 1 ? 'un.' : 'un.'}
+                  </strong>
                 </div>
                 <div className="confirm-detail-box">
                   <span className="confirm-detail-label">Preço a descontar</span>
                   <strong className="confirm-detail-value confirm-detail-value--price">
-                    {formatCurrency(totalItemPrice)}
+                    - {formatCurrency(totalItemPrice)}
                   </strong>
                 </div>
               </div>
@@ -172,10 +276,12 @@ export function CancelConfirmationModal({ item, method, onBack, onConfirmCancel 
           <button
             type="button"
             className="btn-modal-confirm-cancel"
-            onClick={() => onConfirmCancel(item, method)}
+            onClick={() => onConfirmCancel(item, method, cancelQty)}
           >
             <Trash2 size={22} />
-            <span>Confirmar cancelamento</span>
+            <span>
+              Confirmar cancelamento ({cancelQty} {cancelQty === 1 ? 'un.' : 'un.'})
+            </span>
           </button>
         </div>
       </div>

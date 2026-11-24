@@ -139,9 +139,13 @@ export default function App() {
   };
 
   // Iniciar etapa de confirmação (tanto pela Opção A quanto pela Opção B)
-  const handleRequestCancelItem = (item, method) => {
+  const handleRequestCancelItem = (item, method, initialCancelQty = null) => {
     setIsFixedCancelModalOpen(false);
-    setConfirmationTarget({ item, method });
+    setConfirmationTarget({
+      item,
+      method,
+      initialCancelQty: initialCancelQty || item.quantity,
+    });
   };
 
   // Botão "Voltar" na janela de Confirmação de Cancelamento
@@ -155,19 +159,35 @@ export default function App() {
     }
   };
 
-  // Botão "Confirmar cancelamento" na janela de Confirmação
-  const handleConfirmCancel = (itemToCancel, method) => {
+  // Botão "Confirmar cancelamento" na janela de Confirmação (suporta cancelamento parcial ou total da quantidade)
+  const handleConfirmCancel = (itemToCancel, method, quantityToCancel = itemToCancel.quantity) => {
     soundFX.playCancelSuccess();
 
-    // Remove o produto da lista de compras
-    setCartItems((prev) => prev.filter((i) => i.instanceId !== itemToCancel.instanceId));
+    const safeQtyToCancel = Math.max(
+      1,
+      Math.min(itemToCancel.quantity, Number(quantityToCancel) || itemToCancel.quantity)
+    );
+    const isFullRemoval = safeQtyToCancel >= itemToCancel.quantity;
 
-    if (selectedInstanceId === itemToCancel.instanceId) {
+    // Atualiza ou remove o produto da lista de compras conforme a quantidade selecionada
+    setCartItems((prev) => {
+      if (isFullRemoval) {
+        return prev.filter((i) => i.instanceId !== itemToCancel.instanceId);
+      }
+      return prev.map((i) =>
+        i.instanceId === itemToCancel.instanceId
+          ? { ...i, quantity: i.quantity - safeQtyToCancel }
+          : i
+      );
+    });
+
+    if (isFullRemoval && selectedInstanceId === itemToCancel.instanceId) {
       setSelectedInstanceId(null);
     }
 
     const canceledRecord = {
       ...itemToCancel,
+      quantity: safeQtyToCancel,
       cancelId: `cancel-${Date.now()}`,
       canceledAt: getCurrentTimeStr(),
       methodLabel: method === 'OptionA' ? 'Via Lista (Opção A)' : 'Via Botão Fixo (Opção B)',
@@ -400,6 +420,7 @@ export default function App() {
       <CancelConfirmationModal
         item={confirmationTarget?.item || null}
         method={confirmationTarget?.method || 'OptionA'}
+        initialCancelQty={confirmationTarget?.initialCancelQty}
         onBack={handleBackFromConfirmation}
         onConfirmCancel={handleConfirmCancel}
       />

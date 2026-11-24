@@ -113,20 +113,19 @@ export default function ProductList({
                 {isSelected && (
                   <div className="registered-item__drawer">
                     <div className="drawer-quantity-controls">
-                      <span className="drawer-label">Ajustar quantidade:</span>
+                      <span className="drawer-label">
+                        Registrado: <strong>{item.quantity} un.</strong> (Adicionar mais ao carrinho):
+                      </span>
                       <div className="qty-stepper">
                         <button
                           type="button"
                           className="qty-btn"
                           onClick={(e) => {
                             e.stopPropagation();
-                            if (item.quantity > 1) {
-                              onChangeQuantity(item.instanceId, item.quantity - 1);
-                            } else {
-                              onRequestCancelItem(item, 'OptionA');
-                            }
+                            onRequestCancelItem(item, 'OptionA', 1);
                           }}
-                          aria-label="Diminuir quantidade"
+                          title="Cancelar 1 unidade (com confirmação)"
+                          aria-label="Cancelar 1 unidade"
                         >
                           <Minus size={18} />
                         </button>
@@ -138,6 +137,7 @@ export default function ProductList({
                             e.stopPropagation();
                             onChangeQuantity(item.instanceId, item.quantity + 1);
                           }}
+                          title="Registrar mais 1 unidade deste produto"
                           aria-label="Aumentar quantidade"
                         >
                           <Plus size={18} />
@@ -146,16 +146,33 @@ export default function ProductList({
                     </div>
 
                     <div className="drawer-action-buttons">
+                      {item.quantity > 1 && (
+                        <button
+                          type="button"
+                          className="btn-remove-partial-inline"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onRequestCancelItem(item, 'OptionA', 1);
+                          }}
+                        >
+                          <Trash2 size={18} />
+                          <span>Cancelar 1 un.</span>
+                        </button>
+                      )}
                       <button
                         type="button"
                         className="btn-remove-inline"
                         onClick={(e) => {
                           e.stopPropagation();
-                          onRequestCancelItem(item, 'OptionA');
+                          onRequestCancelItem(item, 'OptionA', item.quantity);
                         }}
                       >
                         <Trash2 size={20} />
-                        <span>Remover produto</span>
+                        <span>
+                          {item.quantity > 1
+                            ? `Remover produto (Escolher qtd.)`
+                            : 'Remover produto'}
+                        </span>
                       </button>
                     </div>
                   </div>

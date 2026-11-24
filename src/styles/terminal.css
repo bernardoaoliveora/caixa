@@ -661,6 +661,32 @@ button:focus-visible {
   font-size: 0.98rem;
 }
 
+.drawer-action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn-remove-partial-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--red-50);
+  border: 2px solid var(--red-600);
+  color: var(--red-700);
+  font-size: 0.92rem;
+  font-weight: 700;
+  padding: 10px 16px;
+  min-height: 48px;
+  border-radius: var(--radius-sm);
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.btn-remove-partial-inline:hover {
+  background: var(--red-100);
+}
+
 .btn-remove-inline {
   display: inline-flex;
   align-items: center;
@@ -1665,6 +1691,122 @@ button:focus-visible {
 .confirm-detail-value--name {
   font-size: 1.22rem;
   color: var(--navy-900);
+}
+
+.confirm-unit-price-hint {
+  font-size: 0.84rem;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+/* Seletor Touchscreen de Quantidade a Cancelar no Modal de Confirmação */
+.confirm-qty-selector-box {
+  background: #FFFFFF;
+  border: 2px solid var(--navy-700);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.confirm-qty-selector-box__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.confirm-qty-presets {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.qty-preset-pill {
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  background: var(--navy-50);
+  border: 1px solid var(--navy-600);
+  color: var(--navy-800);
+  transition: all 0.15s ease;
+}
+
+.qty-preset-pill--active {
+  background: var(--navy-900);
+  color: #FFFFFF;
+  border-color: var(--navy-900);
+}
+
+.confirm-qty-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--bg-surface-subtle);
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+}
+
+.confirm-qty-btn {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-sm);
+  background: var(--navy-900);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.confirm-qty-btn:hover:not(:disabled) {
+  background: var(--navy-700);
+}
+
+.confirm-qty-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.confirm-qty-btn:disabled {
+  background: #CBD5E1;
+  color: #64748B;
+  cursor: not-allowed;
+}
+
+.confirm-qty-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.confirm-qty-display__number {
+  font-family: var(--font-mono);
+  font-size: 1.65rem;
+  font-weight: 800;
+  color: var(--red-700);
+  line-height: 1;
+}
+
+.confirm-qty-display__label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.confirm-qty-remaining-badge {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--navy-800);
+  background: var(--navy-50);
+  padding: 6px 10px;
+  border-radius: 6px;
+  text-align: center;
 }
 
 .confirm-detail-value--price {

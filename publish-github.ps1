@@ -1,4 +1,4 @@
-﻿# =============================================================================
+# =============================================================================
 # Script de Publicação no GitHub (PowerShell)
 # Repositório remoto: https://github.com/bernardoaoliveora/caixa.git
 # Usuário GitHub: bnwebstudio
