@@ -28,17 +28,23 @@ Este protótipo demonstra como substituir uma interação confusa e bloqueante p
   - **Vermelho** (`#DC2626`) reservado para ações de remoção e alerta.
 - **Lei de Fitts & Lei de Hick**: Botões amplos para toque direto, vocabulário simples (sem códigos fiscais crípticos) e baixa densidade informacional por etapa.
 
-### 2. Duas Formas de Cancelar Produtos
+### 2. Duas Formas de Cancelar Produtos e Cancelamento Parcial
 - **Opção A — Pela Lista de Produtos**: O consumidor toca diretamente sobre qualquer item já registrado na lista e aciona o botão contextual **"Remover produto"**.
 - **Opção B — Pelo Botão Fixo**: O consumidor toca no botão permanente **"Cancelar produto"** no painel direito e escolhe, em uma janela dedicada, qual item registrado deseja remover.
-- **Etapa Unificada de Confirmação**: Ambos os caminhos convergem para uma janela de confirmação clara contendo **Nome do produto**, **Quantidade**, **Preço** e a pergunta *"Deseja realmente remover este produto da sua compra?"*, com as opções **"Voltar"** e **"Confirmar cancelamento"**.
+- **Seleção de Quantidade e Prévia Financeira**: Na janela de confirmação, o utilizador pode ajustar exatamente quantas unidades deseja remover (ex.: **cancelar 2 de 3 unidades**), visualizando **antes de confirmar**:
+  - **Nome do produto**, **preço unitário** e **peso**
+  - **Quantidade a remover**
+  - **Valor a descontar**
+  - **Novo total da compra**
+  - Botões **"Voltar"** e **"Confirmar cancelamento"**
 
-### 3. Conexão Tela ↔ Mundo Físico (Bandeja `PRODUTOS CANCELADOS`)
-- Após confirmar o cancelamento, o sistema:
-  1. Remove o item da lista ativa e atualiza o valor total imediatamente.
-  2. Registra o item no **Histórico de Produtos Cancelados** (garantindo que não seja contabilizado no total final).
+### 3. Conexão Tela ↔ Mundo Físico e Transições Limpas
+- Após confirmar o cancelamento, a interface evita cartões e botões concorrentes ao fundo, mantendo o foco no próximo passo do utilizador:
+  1. Remove (ou deduz) a quantidade cancelada da lista ativa e atualiza o valor total imediatamente.
+  2. Registra o item no **Histórico de Itens Cancelados (Sem Cobrança)**.
   3. Exibe a mensagem **"Produto cancelado com sucesso!"** seguida da instrução: *"Coloque o produto na área identificada para itens cancelados."*
-  4. Destaca visualmente a bandeja física **"PRODUTOS CANCELADOS"**, separada da **Área de Ensacamento**.
+  4. Separa visualmente a **2. Área de Ensacamento (Compra Ativa / Peso)** da **3. Bandeja de Produtos Cancelados**, permitindo simular o depósito físico na bandeja.
+  5. Ao finalizar a compra, apresenta um **Resumo Final Transparente** com **Total Bruto Registrado**, **Valor Cancelado / Abatido** e **Valor Final Cobrado**.
 
 ### 4. Tratamento de Exceções e Regras de Segurança
 - Impede o cancelamento de produtos inexistentes (carrinho vazio).
