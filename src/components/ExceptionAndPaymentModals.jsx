@@ -12,9 +12,7 @@ import {
 import { formatCurrency } from '../data/products';
 
 /**
- * Seção 8 — Modal de Situações Excepcionais (Assistência de Funcionário):
- * - Divergência de peso na balança / bandeja de produtos cancelados
- * - Bloqueio de segurança (ex: múltiplos cancelamentos seguidos ou solicitação de ajuda)
+ * Modal de Situações Excepcionais (Assistência de Funcionário)
  */
 export function AssistanceModal({ exception, onResolveByEmployee }) {
   if (!exception) return null;
@@ -39,7 +37,7 @@ export function AssistanceModal({ exception, onResolveByEmployee }) {
           </div>
           <div>
             <span className="modal-step-tag">
-              Situação Excepcional • Assistência de Funcionário Necessária
+              Situação Excepcional • Assistência de Funcionário
             </span>
             <h2 id="exception-modal-title" className="modal-window__title">
               {exception.title}
@@ -53,23 +51,22 @@ export function AssistanceModal({ exception, onResolveByEmployee }) {
             <div className="exception-details-list">
               <div className="exception-detail-item">
                 <span>Status do Terminal:</span>
-                <strong>Aguardando conferência do atendente (Luz Amarela/Vermelha acesa)</strong>
+                <strong>Aguardando conferência do funcionário</strong>
               </div>
               <div className="exception-detail-item">
-                <span>Motivo detectado:</span>
+                <span>Diagnóstico:</span>
                 <strong>{exception.reason}</strong>
               </div>
               <div className="exception-detail-item">
-                <span>Sua compra:</span>
-                <strong>Preservada com segurança (nenhum item perdido)</strong>
+                <span>Estado da Compra:</span>
+                <strong>Preservada (nenhum produto registrado foi perdido)</strong>
               </div>
             </div>
           </div>
 
           <p className="exception-ihc-note">
-            <strong>Nota de IHC:</strong> Em vez de travar a tela com códigos técnicos de erro, o
-            terminal explica claramente o motivo da pausa e orienta o consumidor enquanto notifica o
-            funcionário.
+            <strong>Princípio de IHC:</strong> Mensagens de exceção em linguagem natural, indicando
+            claramente a causa física (peso na balança ou limite de segurança) e como prosseguir.
           </p>
         </div>
 
@@ -80,7 +77,7 @@ export function AssistanceModal({ exception, onResolveByEmployee }) {
             onClick={onResolveByEmployee}
           >
             <UserCheck size={22} />
-            <span>Simular Conferência e Liberação do Funcionário (Continuar Compra)</span>
+            <span>Simular Liberação do Funcionário e Retomar Compra</span>
           </button>
         </div>
       </div>
@@ -89,13 +86,14 @@ export function AssistanceModal({ exception, onResolveByEmployee }) {
 }
 
 /**
- * Modal de Finalização e Pagamento Simulado
+ * Resumo Final Transparente da Compra (Valor Cobrado, Valor Cancelado e Total Abatido)
  */
 export function PaymentModal({ isOpen, items, canceledItems, onClose, onFinishAndReset }) {
   if (!isOpen) return null;
 
-  const totalAmount = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const totalCharged = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const totalCanceled = canceledItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const grossTotal = totalCharged + totalCanceled;
 
   return (
     <div
@@ -110,26 +108,42 @@ export function PaymentModal({ isOpen, items, canceledItems, onClose, onFinishAn
             <CheckCircle2 size={30} />
           </div>
           <div>
-            <span className="modal-step-tag">Resumo Final da Compra</span>
+            <span className="modal-step-tag">Transparência e Feedback Final</span>
             <h2 id="payment-modal-title" className="modal-window__title">
-              Compra Concluída com Sucesso!
+              Resumo Final da Compra
             </h2>
           </div>
         </div>
 
         <div className="modal-window__body">
+          {/* Painel de Transparência Financeira: Bruto vs. Cancelado/Abatido vs. Cobrado */}
+          <div className="payment-transparency-grid">
+            <div className="payment-stat-card">
+              <span className="payment-stat-card__label">Total Bruto Registrado</span>
+              <strong className="payment-stat-card__value">{formatCurrency(grossTotal)}</strong>
+            </div>
+            <div className="payment-stat-card payment-stat-card--canceled">
+              <span className="payment-stat-card__label">Valor Cancelado / Abatido</span>
+              <strong className="payment-stat-card__value">- {formatCurrency(totalCanceled)}</strong>
+            </div>
+            <div className="payment-stat-card payment-stat-card--charged">
+              <span className="payment-stat-card__label">Valor Final Cobrado</span>
+              <strong className="payment-stat-card__value">{formatCurrency(totalCharged)}</strong>
+            </div>
+          </div>
+
           <div className="receipt-box">
             <div className="receipt-box__header">
               <strong>SUPERMERCADO HORIZONTE</strong>
-              <span>Caixa 04 — Cupom de Autoatendimento</span>
+              <span>Caixa 04 — Demonstrativo Transparente de Autoatendimento</span>
             </div>
 
             <div className="receipt-box__section">
-              <h4>Itens Comprados ({items.length})</h4>
+              <h4>Itens Cobrados na Compra ({items.reduce((a, b) => a + b.quantity, 0)} un.)</h4>
               {items.map((item) => (
                 <div key={item.instanceId} className="receipt-line">
                   <span>
-                    {item.quantity}x {item.shortName}
+                    {item.quantity}x {item.name}
                   </span>
                   <strong>{formatCurrency(item.price * item.quantity)}</strong>
                 </div>
@@ -138,13 +152,16 @@ export function PaymentModal({ isOpen, items, canceledItems, onClose, onFinishAn
 
             {canceledItems.length > 0 && (
               <div className="receipt-box__section receipt-box__section--canceled">
-                <h4>Itens Cancelados — Não Cobrados ({canceledItems.length})</h4>
+                <h4>
+                  Histórico de Itens Cancelados — Sem Cobrança (
+                  {canceledItems.reduce((a, b) => a + b.quantity, 0)} un.)
+                </h4>
                 {canceledItems.map((c) => (
                   <div key={c.cancelId} className="receipt-line receipt-line--canceled">
                     <span>
-                      {c.quantity}x {c.shortName} (Cancelado)
+                      {c.quantity}x {c.name} (Removido)
                     </span>
-                    <span>{formatCurrency(0)}</span>
+                    <span>Abatido (- {formatCurrency(c.price * c.quantity)}) • R$ 0,00</span>
                   </div>
                 ))}
                 <div className="receipt-line receipt-line--saved">
@@ -155,19 +172,19 @@ export function PaymentModal({ isOpen, items, canceledItems, onClose, onFinishAn
             )}
 
             <div className="receipt-box__total">
-              <span>TOTAL PAGO:</span>
-              <strong>{formatCurrency(totalAmount)}</strong>
+              <span>VALOR TOTAL A PAGAR:</span>
+              <strong>{formatCurrency(totalCharged)}</strong>
             </div>
           </div>
         </div>
 
         <div className="modal-window__footer modal-window__footer--split">
           <button type="button" className="btn-modal-back" onClick={onClose}>
-            <span>Voltar à tela da compra</span>
+            <span>Voltar à compra</span>
           </button>
           <button type="button" className="btn-finish-new" onClick={onFinishAndReset}>
             <RotateCcw size={20} />
-            <span>Iniciar Nova Demonstração</span>
+            <span>Concluir e Iniciar Nova Compra</span>
           </button>
         </div>
       </div>
@@ -176,21 +193,18 @@ export function PaymentModal({ isOpen, items, canceledItems, onClose, onFinishAn
 }
 
 /**
- * Modal com o Roteiro dos 9 Passos da Demonstração Acadêmica de IHC (Seção 10)
+ * Modal com o Roteiro de Demonstração Acadêmica de IHC
  */
 export function DemoGuideModal({ isOpen, onClose, onStartEmpty, onRestoreDemo }) {
   if (!isOpen) return null;
 
   const steps = [
-    '1. O consumidor inicia uma compra (use "Compra Exemplo" ou "Compra do Zero").',
-    '2. Registra alguns produtos tocando nos itens da "Área de Leitura (Leitor Óptico)".',
-    '3. Percebe que adicionou um produto por engano (ex: Azeite Extra Virgem R$ 39,90).',
-    '4. Encontra a opção de cancelamento: Opção A (tocando no produto na lista → "Remover produto") ou Opção B (botão fixo "Cancelar produto").',
-    '5. Seleciona o produto que deseja cancelar.',
-    '6. Confirma a remoção na janela "Deseja realmente remover este produto da sua compra?".',
-    '7. Visualiza o novo valor total atualizado automaticamente.',
-    '8. Recebe a orientação "Coloque o produto na área identificada para itens cancelados." e deposita o item na bandeja "PRODUTOS CANCELADOS".',
-    '9. Continua sua compra normalmente (ou demonstra situações de divergência de peso / bloqueio de segurança).',
+    '1. Área de Leitura / Adição: Escolha "+1 un.", "+2 un." ou "+3 un." e toque nos produtos para adicioná-los com nome, preço e peso.',
+    '2. Lista de Compra e Botão Fixo: Veja os produtos registrados (ex.: 3x Leite Integral) e o botão fixo vermelho "Cancelar produto".',
+    '3. Inicie o Cancelamento: Toque direto em um produto da lista (Opção A) ou no botão fixo "Cancelar produto" (Opção B).',
+    '4. Ajuste de Quantidade e Prévia: Escolha quantas unidades remover (ex.: 2 de 3 unidades), confira o Valor a Descontar e o Novo Total da Compra antes de confirmar, ou toque em "Voltar".',
+    '5. Conexão com o Ambiente Físico: Após confirmar, siga a instrução limpa para depositar o item na "Bandeja de Produtos Cancelados" (separada da Área de Ensacamento).',
+    '6. Histórico e Resumo Final: Confira o Histórico de Itens Cancelados (sem cobrança) e toque em "Finalizar e Pagar" para ver o demonstrativo com Total Bruto, Valor Abatido e Valor Final Cobrado.',
   ];
 
   return (
@@ -206,9 +220,9 @@ export function DemoGuideModal({ isOpen, onClose, onStartEmpty, onRestoreDemo })
             <Sparkles size={26} />
           </div>
           <div>
-            <span className="modal-step-tag">Guia Rápido para Gravação do Vídeo</span>
+            <span className="modal-step-tag">Guia Rápido de Avaliação</span>
             <h2 id="guide-modal-title" className="modal-window__title">
-              Roteiro de Demonstração — Projeto de IHC
+              Roteiro de Demonstração — Princípios de IHC
             </h2>
           </div>
           <button
@@ -253,7 +267,7 @@ export function DemoGuideModal({ isOpen, onClose, onStartEmpty, onRestoreDemo })
             }}
           >
             <RotateCcw size={18} />
-            <span>Carregar Compra Exemplo e Fechar</span>
+            <span>Carregar Compra Exemplo</span>
           </button>
         </div>
       </div>

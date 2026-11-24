@@ -1,13 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   ShoppingBag,
   Volume2,
   VolumeX,
-  HelpCircle,
   RotateCcw,
   AlertTriangle,
   ShieldAlert,
   PlayCircle,
+  SlidersHorizontal,
   Sparkles,
 } from 'lucide-react';
 
@@ -21,17 +21,19 @@ export default function TerminalHeader({
   onTriggerSecurityBlock,
   onOpenGuide,
 }) {
+  const [showSimMenu, setShowSimMenu] = useState(false);
+
   const statusConfig = {
     normal: {
-      label: 'Caixa Livre • Compra em Andamento',
+      label: 'Operação Normal • Passe os produtos ou gerencie sua compra',
       badgeClass: 'status-badge--normal',
     },
     awaiting_tray: {
-      label: 'Ação Física: Coloque o item na bandeja de cancelados',
+      label: 'Ação Física Pendente: Coloque o item removido na Bandeja de Cancelados',
       badgeClass: 'status-badge--warning',
     },
     assistance_needed: {
-      label: 'Assistência de Funcionário Solicitada',
+      label: 'Terminal Pausado • Aguardando Conferência de Funcionário',
       badgeClass: 'status-badge--danger',
     },
   };
@@ -42,7 +44,7 @@ export default function TerminalHeader({
     <header className="terminal-header">
       <div className="terminal-header__brand">
         <div className="brand-logo" aria-hidden="true">
-          <ShoppingBag size={26} strokeWidth={2.3} />
+          <ShoppingBag size={24} strokeWidth={2.3} />
         </div>
         <div className="brand-text">
           <div className="brand-title-row">
@@ -50,7 +52,7 @@ export default function TerminalHeader({
             <span className="terminal-id-badge">CAIXA 04 • AUTOATENDIMENTO</span>
           </div>
           <p className="brand-subtitle">
-            Terminal Touchscreen de Autoatendimento — Projeto Acadêmico de IHC
+            Redesign de Cancelamento Autônomo — Visibilidade, Prevenção de Erros e Controle (IHC)
           </p>
         </div>
       </div>
@@ -65,55 +67,74 @@ export default function TerminalHeader({
       <div className="terminal-header__controls">
         <button
           type="button"
-          className="header-ctrl-btn header-ctrl-btn--guide"
-          onClick={onOpenGuide}
-          title="Ver roteiro para gravação do vídeo de demonstração"
-        >
-          <Sparkles size={18} />
-          <span>Roteiro IHC</span>
-        </button>
-
-        <button
-          type="button"
-          className="header-ctrl-btn"
-          onClick={onStartEmpty}
-          title="Iniciar uma compra do zero (carrinho vazio)"
-        >
-          <PlayCircle size={18} />
-          <span>Compra do Zero</span>
-        </button>
-
-        <button
-          type="button"
           className="header-ctrl-btn"
           onClick={onResetDemo}
-          title="Restaurar compra de exemplo com produtos pré-registrados"
+          title="Restaurar compra inicial de demonstração"
         >
-          <RotateCcw size={18} />
-          <span>Compra Exemplo</span>
+          <RotateCcw size={16} />
+          <span>Reiniciar Compra</span>
         </button>
 
-        <div className="header-divider" aria-hidden="true" />
+        <div className="sim-dropdown-wrapper">
+          <button
+            type="button"
+            className={`header-ctrl-btn ${showSimMenu ? 'header-ctrl-btn--active' : ''}`}
+            onClick={() => setShowSimMenu((v) => !v)}
+            aria-expanded={showSimMenu}
+          >
+            <SlidersHorizontal size={16} />
+            <span>Cenários IHC</span>
+          </button>
 
-        <button
-          type="button"
-          className="header-ctrl-btn header-ctrl-btn--warn"
-          onClick={onTriggerWeightAlert}
-          title="Simular divergência de peso na balança (exige assistência)"
-        >
-          <AlertTriangle size={18} />
-          <span>Simular Peso</span>
-        </button>
-
-        <button
-          type="button"
-          className="header-ctrl-btn header-ctrl-btn--danger"
-          onClick={onTriggerSecurityBlock}
-          title="Simular bloqueio de segurança para assistência de funcionário"
-        >
-          <ShieldAlert size={18} />
-          <span>Bloqueio Seg.</span>
-        </button>
+          {showSimMenu && (
+            <div className="sim-dropdown-menu" role="menu">
+              <button
+                type="button"
+                className="sim-dropdown-item"
+                onClick={() => {
+                  onOpenGuide();
+                  setShowSimMenu(false);
+                }}
+              >
+                <Sparkles size={16} />
+                <span>Roteiro de Demonstração IHC</span>
+              </button>
+              <button
+                type="button"
+                className="sim-dropdown-item"
+                onClick={() => {
+                  onStartEmpty();
+                  setShowSimMenu(false);
+                }}
+              >
+                <PlayCircle size={16} />
+                <span>Iniciar Compra com Carrinho Vazio</span>
+              </button>
+              <button
+                type="button"
+                className="sim-dropdown-item sim-dropdown-item--warn"
+                onClick={() => {
+                  onTriggerWeightAlert();
+                  setShowSimMenu(false);
+                }}
+              >
+                <AlertTriangle size={16} />
+                <span>Simular Divergência de Peso na Balança</span>
+              </button>
+              <button
+                type="button"
+                className="sim-dropdown-item sim-dropdown-item--danger"
+                onClick={() => {
+                  onTriggerSecurityBlock();
+                  setShowSimMenu(false);
+                }}
+              >
+                <ShieldAlert size={16} />
+                <span>Simular Bloqueio de Segurança (Funcionário)</span>
+              </button>
+            </div>
+          )}
+        </div>
 
         <button
           type="button"
@@ -122,7 +143,7 @@ export default function TerminalHeader({
           aria-label={soundEnabled ? 'Desativar som do caixa' : 'Ativar som do caixa'}
           title={soundEnabled ? 'Som do leitor ativado' : 'Som do leitor desativado'}
         >
-          {soundEnabled ? <Volume2 size={20} /> : <VolumeX size={20} />}
+          {soundEnabled ? <Volume2 size={19} /> : <VolumeX size={19} />}
         </button>
       </div>
     </header>

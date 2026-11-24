@@ -16,7 +16,6 @@ import {
 } from './components/ExceptionAndPaymentModals';
 import { INITIAL_CART_ITEMS } from './data/products';
 import { soundFX } from './utils/sound';
-import { CheckCircle2, PackageX, X } from 'lucide-react';
 
 function getCurrentTimeStr() {
   const now = new Date();
@@ -32,18 +31,17 @@ export default function App() {
   const [cartItems, setCartItems] = useState(INITIAL_CART_ITEMS);
   // Produto selecionado diretamente na lista (Opção A)
   const [selectedInstanceId, setSelectedInstanceId] = useState(null);
-  // Histórico de produtos cancelados durante a compra (Seção 7)
+  // Histórico de produtos cancelados durante a compra (sem cobrança)
   const [canceledHistory, setCanceledHistory] = useState([]);
-  // Itens fisicamente depositados na bandeja "PRODUTOS CANCELADOS" (Seção 6)
+  // Itens fisicamente depositados na bandeja "PRODUTOS CANCELADOS"
   const [canceledTrayItems, setCanceledTrayItems] = useState([]);
-  // Item cancelado aguardando ser colocado fisicamente na bandeja "PRODUTOS CANCELADOS"
+  // Item cancelado aguardando ser colocado fisicamente na bandeja
   const [pendingTrayItem, setPendingTrayItem] = useState(null);
 
-  // Estados dos modais do fluxo de cancelamento
+  // Estados dos modais do fluxo de cancelamento (apenas 1 modal ativo por vez para transição limpa)
   const [isFixedCancelModalOpen, setIsFixedCancelModalOpen] = useState(false);
-  const [confirmationTarget, setConfirmationTarget] = useState(null); // { item, method: 'OptionA' | 'OptionB' }
+  const [confirmationTarget, setConfirmationTarget] = useState(null);
   const [justCanceledItem, setJustCanceledItem] = useState(null);
-  const [inlineSuccessBanner, setInlineSuccessBanner] = useState(null);
 
   // Feedback visual quando tenta cancelar sem produtos registrados
   const [emptyCancelFeedback, setEmptyCancelFeedback] = useState(false);
@@ -52,13 +50,22 @@ export default function App() {
   const [scannerActive, setScannerActive] = useState(false);
   const [lastScannedId, setLastScannedId] = useState(null);
 
-  // Situações excepcionais (Seção 8) e modais auxiliares
+  // Situações excepcionais e modais auxiliares
   const [activeException, setActiveException] = useState(null);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isGuideModalOpen, setIsGuideModalOpen] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
 
   const totalAmount = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+  const isAnyModalOpen = Boolean(
+    isFixedCancelModalOpen ||
+      confirmationTarget ||
+      justCanceledItem ||
+      activeException ||
+      isPaymentModalOpen ||
+      isGuideModalOpen
+  );
 
   // Determina o status luminoso do terminal físico
   const terminalStatus = activeException
@@ -73,15 +80,15 @@ export default function App() {
     soundFX.enabled = next;
   };
 
-  // Registrar um produto a partir da Área de Leitura (Scanner Óptico)
-  const handleScanProduct = (catalogProduct) => {
+  // Registrar um produto (com suporte a adicionar 1, 2 ou 3 unidades para testar cancelamento parcial)
+  const handleScanProduct = (catalogProduct, quantityToAdd = 1) => {
     soundFX.playScanBeep();
     setScannerActive(true);
     setEmptyCancelFeedback(false);
 
     setTimeout(() => {
       setScannerActive(false);
-    }, 450);
+    }, 400);
 
     setCartItems((prev) => {
       const existingIndex = prev.findIndex((i) => i.productId === catalogProduct.id);
@@ -90,7 +97,7 @@ export default function App() {
         const existing = updated[existingIndex];
         updated[existingIndex] = {
           ...existing,
-          quantity: existing.quantity + 1,
+          quantity: existing.quantity + quantityToAdd,
         };
         setLastScannedId(existing.instanceId);
         return updated;
@@ -108,23 +115,13 @@ export default function App() {
           shortName: catalogProduct.shortName,
           category: catalogProduct.category,
           price: catalogProduct.price,
-          quantity: 1,
+          quantity: quantityToAdd,
           weightKg: catalogProduct.weightKg,
           emoji: catalogProduct.emoji,
           registeredAt: getCurrentTimeStr(),
         },
       ];
     });
-  };
-
-  // Alterar quantidade diretamente na lista
-  const handleChangeQuantity = (instanceId, newQuantity) => {
-    if (newQuantity < 1) return;
-    setCartItems((prev) =>
-      prev.map((item) =>
-        item.instanceId === instanceId ? { ...item, quantity: newQuantity } : item
-      )
-    );
   };
 
   // Opção B: Tocar no botão fixo "Cancelar produto"
@@ -135,6 +132,7 @@ export default function App() {
       return;
     }
     setEmptyCancelFeedback(false);
+    setSelectedInstanceId(null);
     setIsFixedCancelModalOpen(true);
   };
 
@@ -153,13 +151,12 @@ export default function App() {
     if (!confirmationTarget) return;
     const previousMethod = confirmationTarget.method;
     setConfirmationTarget(null);
-    // Se veio da Opção B, permite voltar à lista de seleção ou fechar
     if (previousMethod === 'OptionB' && cartItems.length > 0) {
       setIsFixedCancelModalOpen(true);
     }
   };
 
-  // Botão "Confirmar cancelamento" na janela de Confirmação (suporta cancelamento parcial ou total da quantidade)
+  // Botão "Confirmar cancelamento" (suporta cancelamento parcial ex.: 2 de 3 unidades, ou total)
   const handleConfirmCancel = (itemToCancel, method, quantityToCancel = itemToCancel.quantity) => {
     soundFX.playCancelSuccess();
 
@@ -169,7 +166,6 @@ export default function App() {
     );
     const isFullRemoval = safeQtyToCancel >= itemToCancel.quantity;
 
-    // Atualiza ou remove o produto da lista de compras conforme a quantidade selecionada
     setCartItems((prev) => {
       if (isFullRemoval) {
         return prev.filter((i) => i.instanceId !== itemToCancel.instanceId);
@@ -181,9 +177,7 @@ export default function App() {
       );
     });
 
-    if (isFullRemoval && selectedInstanceId === itemToCancel.instanceId) {
-      setSelectedInstanceId(null);
-    }
+    setSelectedInstanceId(null);
 
     const canceledRecord = {
       ...itemToCancel,
@@ -193,17 +187,13 @@ export default function App() {
       methodLabel: method === 'OptionA' ? 'Via Lista (Opção A)' : 'Via Botão Fixo (Opção B)',
     };
 
-    // Adiciona ao histórico de produtos cancelados
     setCanceledHistory((prev) => [canceledRecord, ...prev]);
-
-    // Define como pendente de depósito na bandeja física "PRODUTOS CANCELADOS"
     setPendingTrayItem(canceledRecord);
     setConfirmationTarget(null);
     setJustCanceledItem(canceledRecord);
-    setInlineSuccessBanner(canceledRecord);
   };
 
-  // Simular ação física do consumidor: colocar o produto removido na bandeja "PRODUTOS CANCELADOS"
+  // Simular ação física: colocar o item removido na Bandeja de Produtos Cancelados
   const handlePlaceInTrayAndContinue = (canceledRecord) => {
     const target = canceledRecord || pendingTrayItem;
     if (target) {
@@ -214,65 +204,58 @@ export default function App() {
     }
     setPendingTrayItem(null);
     setJustCanceledItem(null);
-
-    // Se o consumidor realizar 4 ou mais cancelamentos na mesma compra, podemos demonstrar
-    // o bloqueio preventivo opcional ou manter a compra fluindo normalmente
   };
 
-  // Simular situação excepcional: Consumidor não colocou o produto na bandeja de cancelados (Divergência de peso)
+  // Simular exceção: Consumidor não colocou o item na bandeja de cancelados (Divergência de peso)
   const handleSimulateForgotTray = (canceledRecord) => {
     soundFX.playAlert();
     setJustCanceledItem(null);
     setActiveException({
       type: 'weight_discrepancy',
       title: 'Divergência de Peso Detectada na Balança',
-      reason: `O produto cancelado "${
-        canceledRecord ? canceledRecord.name : 'Item removido'
-      }" ainda está na área de ensacamento ou não foi identificado na bandeja "PRODUTOS CANCELADOS".`,
+      reason: `O item cancelado (${
+        canceledRecord ? `${canceledRecord.quantity}x ${canceledRecord.name}` : 'Item removido'
+      }) não foi identificado na Bandeja de Produtos Cancelados.`,
       description:
-        'Para continuar sua compra com segurança, retire o item cancelado da sacola e coloque-o na bandeja "PRODUTOS CANCELADOS", ou aguarde o funcionário.',
+        'Para prosseguir com segurança, retire o item cancelado da área de ensacamento e coloque-o na Bandeja de Produtos Cancelados, ou aguarde a conferência do funcionário.',
     });
   };
 
-  // Simular situação excepcional manualmente pelo cabeçalho: Divergência de Peso
   const handleTriggerWeightAlert = () => {
     soundFX.playAlert();
     setActiveException({
       type: 'weight_discrepancy',
       title: 'Divergência de Peso na Área de Ensacamento',
       reason:
-        'O peso medido na balança de ensacamento não corresponde aos produtos ativos registrados na tela.',
+        'O peso aferido na balança de ensacamento difere do peso esperado para os itens ativos da compra.',
       description:
-        'Verifique se algum produto cancelado permaneceu na sacola em vez de ser colocado na bandeja "PRODUTOS CANCELADOS". Um funcionário foi notificado para auxiliar.',
+        'Verifique se algum item cancelado permaneceu na sacola em vez de ser depositado na Bandeja de Produtos Cancelados.',
     });
   };
 
-  // Simular situação excepcional: Bloqueio de Segurança / Auditoria de Funcionário
   const handleTriggerSecurityBlock = () => {
     soundFX.playAlert();
     setActiveException({
       type: 'security_block',
-      title: 'Bloqueio Preventivo de Segurança — Conferência do Atendente',
+      title: 'Bloqueio Preventivo de Segurança — Conferência do Funcionário',
       reason:
-        'Limite de cancelamentos autônomos atingido nesta compra ou item sujeito à conferência visual.',
+        'Múltiplos cancelamentos realizados ou item sujeito à validação visual de autoatendimento.',
       description:
-        'Sua compra está salva! Um funcionário do Supermercado Horizonte já foi acionado para validar os itens na bandeja "PRODUTOS CANCELADOS" e liberar o terminal.',
+        'Sua compra está preservada! Um funcionário foi chamado automaticamente para validar a Bandeja de Produtos Cancelados e liberar o terminal.',
     });
   };
 
-  // Solicitar ajuda voluntariamente
   const handleRequestAssistance = () => {
     soundFX.playAlert();
     setActiveException({
       type: 'attendant_requested',
-      title: 'Solicitação de Ajuda Enviada ao Funcionário',
-      reason: 'O consumidor tocou no botão "Chamar Funcionário" no painel do caixa.',
+      title: 'Assistência de Funcionário Solicitada',
+      reason: 'Você acionou o botão de ajuda no terminal de autoatendimento.',
       description:
-        'A luz indicadora do Caixa 04 foi acesa. Um atendente chegará em instantes para ajudar você.',
+        'A luz indicadora do Caixa 04 foi acesa. Um funcionário chegará em instantes para auxiliar você.',
     });
   };
 
-  // Liberação pelo funcionário
   const handleResolveException = () => {
     if (pendingTrayItem) {
       setCanceledTrayItems((prev) => {
@@ -284,7 +267,6 @@ export default function App() {
     setActiveException(null);
   };
 
-  // Restaurar compra exemplo para o vídeo
   const handleResetDemo = () => {
     setCartItems(INITIAL_CART_ITEMS);
     setSelectedInstanceId(null);
@@ -293,13 +275,11 @@ export default function App() {
     setPendingTrayItem(null);
     setConfirmationTarget(null);
     setJustCanceledItem(null);
-    setInlineSuccessBanner(null);
     setActiveException(null);
     setEmptyCancelFeedback(false);
     setIsPaymentModalOpen(false);
   };
 
-  // Iniciar compra do zero (carrinho vazio)
   const handleStartEmpty = () => {
     setCartItems([]);
     setSelectedInstanceId(null);
@@ -308,7 +288,6 @@ export default function App() {
     setPendingTrayItem(null);
     setConfirmationTarget(null);
     setJustCanceledItem(null);
-    setInlineSuccessBanner(null);
     setActiveException(null);
     setEmptyCancelFeedback(false);
     setIsPaymentModalOpen(false);
@@ -316,7 +295,7 @@ export default function App() {
 
   return (
     <div className="kiosk-shell">
-      {/* Cabeçalho Superior do Terminal Físico */}
+      {/* Cabeçalho Limpo do Terminal */}
       <TerminalHeader
         terminalStatus={terminalStatus}
         soundEnabled={soundEnabled}
@@ -328,66 +307,25 @@ export default function App() {
         onOpenGuide={() => setIsGuideModalOpen(true)}
       />
 
-      {/* Banner de Confirmação Visual e Orientação Física na Tela Principal (Seção 5) */}
-      {inlineSuccessBanner && (
-        <div className="inline-cancel-feedback-bar" role="status" aria-live="polite">
-          <div className="inline-cancel-feedback-bar__left">
-            <span className="inline-feedback-icon">
-              <CheckCircle2 size={22} />
-            </span>
-            <div className="inline-feedback-texts">
-              <strong>Produto cancelado com sucesso!</strong>
-              <span className="inline-feedback-separator">•</span>
-              <span className="inline-feedback-guidance">
-                <PackageX size={17} />
-                Coloque o produto na área identificada para itens cancelados (
-                <em>&ldquo;{inlineSuccessBanner.shortName}&rdquo;</em>).
-              </span>
-            </div>
-          </div>
-          <div className="inline-cancel-feedback-bar__right">
-            {pendingTrayItem && (
-              <button
-                type="button"
-                className="inline-feedback-tray-btn"
-                onClick={() => handlePlaceInTrayAndContinue(pendingTrayItem)}
-              >
-                Confirmar depósito na bandeja
-              </button>
-            )}
-            <button
-              type="button"
-              className="inline-feedback-close"
-              onClick={() => setInlineSuccessBanner(null)}
-              aria-label="Fechar aviso"
-            >
-              <X size={18} />
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Área Principal da Tela Touchscreen Horizontal */}
+      {/* Tela Principal Touchscreen Horizontal */}
       <main className="terminal-main-screen">
-        {/* Coluna Esquerda/Central: Lista de Produtos Registrados + Histórico de Cancelados */}
+        {/* Coluna Esquerda: Lista de Compra Ativa + Histórico de Cancelados */}
         <div className="terminal-left-column">
           <ProductList
             items={cartItems}
             selectedInstanceId={selectedInstanceId}
             onSelectItem={setSelectedInstanceId}
             onRequestCancelItem={handleRequestCancelItem}
-            onChangeQuantity={handleChangeQuantity}
             lastScannedId={lastScannedId}
           />
 
           <CanceledHistory
             canceledItems={canceledHistory}
             pendingTrayItem={pendingTrayItem}
-            onPlaceInTray={handlePlaceInTrayAndContinue}
           />
         </div>
 
-        {/* Coluna Direita: Valor Total + Botão Fixo "Cancelar produto" + Finalizar Compra */}
+        {/* Coluna Direita: Total Atualizado + Botão Fixo "Cancelar produto" + Finalizar */}
         <CheckoutSummary
           items={cartItems}
           canceledItems={canceledHistory}
@@ -398,17 +336,18 @@ export default function App() {
         />
       </main>
 
-      {/* Bancada Física Inferior: 1. Leitor de Produtos | 2. Área de Ensacamento | 3. Bandeja "PRODUTOS CANCELADOS" */}
+      {/* Ambiente Físico: 1. Leitor/Adição | 2. Área de Ensacamento (Peso) | 3. Bandeja de Produtos Cancelados */}
       <PhysicalZones
         cartItems={cartItems}
         canceledTrayItems={canceledTrayItems}
         pendingTrayItem={pendingTrayItem}
+        isModalOpen={isAnyModalOpen}
         scannerActive={scannerActive}
         onScanProduct={handleScanProduct}
         onConfirmPlaceInTray={handlePlaceInTrayAndContinue}
       />
 
-      {/* Modal Opção B: Escolha do Produto para Cancelar via Botão Fixo */}
+      {/* Modal Opção B: Seleção de Produto a Cancelar */}
       <CancelSelectionModal
         isOpen={isFixedCancelModalOpen}
         items={cartItems}
@@ -416,16 +355,17 @@ export default function App() {
         onSelectProductToCancel={handleRequestCancelItem}
       />
 
-      {/* Etapa 4: Janela de Confirmação de Cancelamento (comum para Opção A e Opção B) */}
+      {/* Modal de Confirmação: Escolha de Quantidade, Valor a Descontar, Novo Total e Voltar */}
       <CancelConfirmationModal
         item={confirmationTarget?.item || null}
         method={confirmationTarget?.method || 'OptionA'}
+        currentTotal={totalAmount}
         initialCancelQty={confirmationTarget?.initialCancelQty}
         onBack={handleBackFromConfirmation}
         onConfirmCancel={handleConfirmCancel}
       />
 
-      {/* Etapa 5: Confirmação Visual "Produto cancelado com sucesso!" + Orientação da Bandeja */}
+      {/* Modal de Transição Física Limpa: Orientação para colocar na Bandeja de Produtos Cancelados */}
       <CancelSuccessModal
         canceledItem={justCanceledItem}
         newTotal={totalAmount}
@@ -433,13 +373,13 @@ export default function App() {
         onSimulateForgotTray={handleSimulateForgotTray}
       />
 
-      {/* Etapa 8: Situações Excepcionais (Divergência de Peso ou Bloqueio de Segurança) */}
+      {/* Modal de Exceções (Funcionário) */}
       <AssistanceModal
         exception={activeException}
         onResolveByEmployee={handleResolveException}
       />
 
-      {/* Modal de Pagamento / Resumo Final da Compra */}
+      {/* Modal de Resumo Final Transparente */}
       <PaymentModal
         isOpen={isPaymentModalOpen}
         items={cartItems}
@@ -448,7 +388,7 @@ export default function App() {
         onFinishAndReset={handleResetDemo}
       />
 
-      {/* Modal com Roteiro de Demonstração IHC (9 passos) */}
+      {/* Modal com Roteiro de Demonstração IHC */}
       <DemoGuideModal
         isOpen={isGuideModalOpen}
         onClose={() => setIsGuideModalOpen(false)}

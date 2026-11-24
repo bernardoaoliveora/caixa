@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   ScanBarcode,
   ShoppingBag,
@@ -7,7 +7,6 @@ import {
   ArrowDown,
   CheckCircle2,
   PlusCircle,
-  AlertTriangle,
 } from 'lucide-react';
 import { CATALOG_PRODUCTS, formatCurrency, formatWeight } from '../data/products';
 
@@ -15,10 +14,13 @@ export default function PhysicalZones({
   cartItems,
   canceledTrayItems,
   pendingTrayItem,
+  isModalOpen,
   scannerActive,
   onScanProduct,
   onConfirmPlaceInTray,
 }) {
+  const [scanMultiplier, setScanMultiplier] = useState(1);
+
   const baggedWeight = cartItems.reduce((acc, item) => acc + item.weightKg * item.quantity, 0);
   const canceledWeight = canceledTrayItems.reduce(
     (acc, item) => acc + item.weightKg * item.quantity,
@@ -30,7 +32,7 @@ export default function PhysicalZones({
       className="physical-hardware-zones"
       aria-label="Simulação das áreas físicas do terminal de autoatendimento"
     >
-      {/* ZONA FÍSICA 1: Área de Leitura de Produtos (Scanner Óptico + Cesta do Consumidor) */}
+      {/* ZONA FÍSICA 1: Área de Leitura / Adição de Produtos */}
       <div className={`hardware-zone hardware-zone--scanner ${scannerActive ? 'scanner-flash' : ''}`}>
         <div className="hardware-zone__header">
           <div className="hardware-zone__title-wrap">
@@ -38,17 +40,25 @@ export default function PhysicalZones({
               <ScanBarcode size={20} />
             </span>
             <div>
-              <h3 className="hardware-zone__title">1. Área de Leitura de Produtos (Leitor Óptico)</h3>
+              <h3 className="hardware-zone__title">1. Área de Leitura / Adição de Produtos</h3>
               <p className="hardware-zone__subtitle">
-                Toque em um produto abaixo para simular a passagem pelo leitor de código de barras
+                Toque em um produto para registrar no caixa (inclui preço e peso por unidade)
               </p>
             </div>
           </div>
-          <div className="scanner-window-indicator" aria-hidden="true">
-            <span className="laser-line" />
-            <span className="scanner-status-text">
-              {scannerActive ? 'BIP! Lendo código...' : 'Leitor Óptico Pronto'}
-            </span>
+
+          <div className="scan-qty-multiplier" role="group" aria-label="Quantidade a adicionar por toque">
+            <span className="scan-qty-multiplier__label">Adicionar por toque:</span>
+            {[1, 2, 3].map((qty) => (
+              <button
+                key={qty}
+                type="button"
+                className={`multiplier-pill ${scanMultiplier === qty ? 'multiplier-pill--active' : ''}`}
+                onClick={() => setScanMultiplier(qty)}
+              >
+                +{qty} un.
+              </button>
+            ))}
           </div>
         </div>
 
@@ -58,23 +68,25 @@ export default function PhysicalZones({
               key={product.id}
               type="button"
               className="catalog-product-btn"
-              onClick={() => onScanProduct(product)}
-              title={`Passar ${product.name} no leitor (${formatCurrency(product.price)})`}
+              onClick={() => onScanProduct(product, scanMultiplier)}
+              title={`Adicionar ${scanMultiplier}x ${product.name} (${formatCurrency(product.price)} • ${formatWeight(product.weightKg)})`}
             >
               <span className="catalog-product-btn__emoji" aria-hidden="true">
                 {product.emoji}
               </span>
               <div className="catalog-product-btn__info">
                 <span className="catalog-product-btn__name">{product.shortName}</span>
-                <span className="catalog-product-btn__price">{formatCurrency(product.price)}</span>
+                <span className="catalog-product-btn__price">
+                  {formatCurrency(product.price)} • {formatWeight(product.weightKg)}
+                </span>
               </div>
-              <PlusCircle size={16} className="catalog-product-btn__add" aria-hidden="true" />
+              <span className="catalog-product-btn__badge">+{scanMultiplier}</span>
             </button>
           ))}
         </div>
       </div>
 
-      {/* ZONA FÍSICA 2: Área de Ensacamento (Produtos que serão comprados) */}
+      {/* ZONA FÍSICA 2: Área de Ensacamento (Compra Ativa / Peso) */}
       <div className="hardware-zone hardware-zone--bagging">
         <div className="hardware-zone__header">
           <div className="hardware-zone__title-wrap">
@@ -82,13 +94,13 @@ export default function PhysicalZones({
               <ShoppingBag size={20} />
             </span>
             <div>
-              <h3 className="hardware-zone__title">2. Área de Ensacamento (Sua Compra)</h3>
+              <h3 className="hardware-zone__title">2. Área de Ensacamento (Compra Ativa)</h3>
               <p className="hardware-zone__subtitle">
-                Balança de conferência das sacolas com itens ativos
+                Balança de conferência dos itens que serão comprados
               </p>
             </div>
           </div>
-          <span className="scale-pill scale-pill--ok">
+          <span className="scale-pill scale-pill--ok" title="Peso total na área de ensacamento">
             <Scale size={14} />
             <span>{formatWeight(baggedWeight)}</span>
           </span>
@@ -97,7 +109,7 @@ export default function PhysicalZones({
         <div className="physical-surface physical-surface--bagging">
           {cartItems.length === 0 ? (
             <div className="physical-surface__placeholder">
-              Sacolas vazias • Passe os produtos no leitor ao lado
+              Área de ensacamento vazia • Registre produtos no leitor ao lado
             </div>
           ) : (
             <div className="physical-tokens-grid">
@@ -107,9 +119,7 @@ export default function PhysicalZones({
                     {item.emoji}
                   </span>
                   <span className="physical-token__label">{item.shortName}</span>
-                  {item.quantity > 1 && (
-                    <span className="physical-token__qty">x{item.quantity}</span>
-                  )}
+                  <span className="physical-token__qty">{item.quantity}x</span>
                 </div>
               ))}
             </div>
@@ -117,7 +127,7 @@ export default function PhysicalZones({
         </div>
       </div>
 
-      {/* ZONA FÍSICA 3: Bandeja Física Separada "PRODUTOS CANCELADOS" */}
+      {/* ZONA FÍSICA 3: Bandeja de Produtos Cancelados (Separada da Compra Ativa) */}
       <div
         className={`hardware-zone hardware-zone--canceled-tray ${
           pendingTrayItem ? 'hardware-zone--canceled-tray-highlight' : ''
@@ -131,27 +141,27 @@ export default function PhysicalZones({
             <div>
               <div className="tray-header-badge-row">
                 <h3 className="hardware-zone__title hardware-zone__title--tray">
-                  PRODUTOS CANCELADOS
+                  3. BANDEJA DE PRODUTOS CANCELADOS
                 </h3>
-                <span className="tray-physical-tag">Bandeja Física Separada</span>
               </div>
               <p className="hardware-zone__subtitle">
-                Coloque aqui os itens removidos da compra (fora das sacolas)
+                Separada das sacolas • Deposite aqui os itens removidos
               </p>
             </div>
           </div>
-          <span className="scale-pill scale-pill--tray">
+          <span className="scale-pill scale-pill--tray" title="Peso depositado na bandeja de cancelados">
+            <Scale size={14} />
             <span>{formatWeight(canceledWeight)}</span>
           </span>
         </div>
 
-        {pendingTrayItem && (
+        {/* Só exibe o botão de ação na bandeja física se o modal já tiver sido fechado e o item ainda estiver pendente */}
+        {pendingTrayItem && !isModalOpen && (
           <div className="tray-guidance-banner" role="region" aria-live="polite">
             <div className="tray-guidance-banner__instruction">
-              <ArrowDown size={20} className="bounce-arrow" />
+              <ArrowDown size={18} className="bounce-arrow" />
               <span>
-                Deposite <strong>{pendingTrayItem.shortName}</strong> nesta bandeja para concluir a
-                conferência física:
+                Pendente: coloque <strong>{pendingTrayItem.quantity}x {pendingTrayItem.shortName}</strong> na bandeja:
               </span>
             </div>
             <button
@@ -159,16 +169,18 @@ export default function PhysicalZones({
               className="btn-place-in-tray"
               onClick={() => onConfirmPlaceInTray(pendingTrayItem)}
             >
-              <CheckCircle2 size={18} />
-              <span>Colocar &ldquo;{pendingTrayItem.shortName}&rdquo; na Bandeja</span>
+              <CheckCircle2 size={17} />
+              <span>Simular Depósito na Bandeja</span>
             </button>
           </div>
         )}
 
         <div className="physical-surface physical-surface--canceled">
-          {canceledTrayItems.length === 0 && !pendingTrayItem ? (
+          {canceledTrayItems.length === 0 ? (
             <div className="physical-surface__placeholder physical-surface__placeholder--tray">
-              Bandeja de Produtos Cancelados vazia • Separada da área de ensacamento
+              {pendingTrayItem
+                ? `Aguardando devolução física de ${pendingTrayItem.quantity}x ${pendingTrayItem.shortName}...`
+                : 'Bandeja de produtos cancelados vazia'}
             </div>
           ) : (
             <div className="physical-tokens-grid">
@@ -178,7 +190,7 @@ export default function PhysicalZones({
                     {item.emoji}
                   </span>
                   <span className="physical-token__label">{item.shortName}</span>
-                  <span className="physical-token__qty">x{item.quantity}</span>
+                  <span className="physical-token__qty">{item.quantity}x</span>
                 </div>
               ))}
             </div>

@@ -1,8 +1,11 @@
 import React from 'react';
-import { History, Ban, CheckCircle2, ArrowDownRight } from 'lucide-react';
+import { History, CheckCircle2, Clock } from 'lucide-react';
 import { formatCurrency } from '../data/products';
 
-export default function CanceledHistory({ canceledItems, pendingTrayItem, onPlaceInTray }) {
+export default function CanceledHistory({ canceledItems, pendingTrayItem }) {
+  const totalCanceledUnits = canceledItems.reduce((acc, item) => acc + item.quantity, 0);
+  const totalAbated = canceledItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
+
   return (
     <section
       className="panel-card canceled-history-panel"
@@ -12,18 +15,25 @@ export default function CanceledHistory({ canceledItems, pendingTrayItem, onPlac
         <div className="header-with-icon">
           <History size={18} className="text-danger" aria-hidden="true" />
           <h2 id="canceled-history-heading" className="panel-card__title--sm">
-            Histórico de Produtos Cancelados
+            Histórico de Itens Cancelados (Sem Cobrança)
           </h2>
         </div>
-        <span className="canceled-count-pill">
-          {canceledItems.length} {canceledItems.length === 1 ? 'removido' : 'removidos'}
-        </span>
+        <div className="canceled-header-pills">
+          {totalAbated > 0 && (
+            <span className="canceled-abated-pill">
+              Total abatido: - {formatCurrency(totalAbated)}
+            </span>
+          )}
+          <span className="canceled-count-pill">
+            {totalCanceledUnits} {totalCanceledUnits === 1 ? 'un. removida' : 'un. removidas'}
+          </span>
+        </div>
       </div>
 
       {canceledItems.length === 0 ? (
         <p className="canceled-history__empty">
-          Nenhum produto foi cancelado nesta compra. Itens removidos aparecerão aqui e não serão
-          cobrados no valor final.
+          Nenhum produto cancelado até o momento. Itens removidos são registrados aqui com cobrança
+          R$ 0,00.
         </p>
       ) : (
         <div className="canceled-history__list" role="list">
@@ -44,29 +54,26 @@ export default function CanceledHistory({ canceledItems, pendingTrayItem, onPlac
                     {item.emoji}
                   </span>
                   <div className="canceled-item__details">
-                    <span className="canceled-item__name">{item.name}</span>
+                    <span className="canceled-item__name">
+                      {item.quantity}x {item.name}
+                    </span>
                     <span className="canceled-item__meta">
-                      Qtd: {item.quantity} • Removido às {item.canceledAt} ({item.methodLabel})
+                      Removido às {item.canceledAt} • {item.methodLabel} • Não contabilizado no total
                     </span>
                   </div>
                 </div>
 
                 <div className="canceled-item__right">
                   <span className="canceled-item__price">
-                    - {formatCurrency(item.price * item.quantity)}
+                    Abatido: - {formatCurrency(item.price * item.quantity)}
                   </span>
                   {isPendingTray ? (
-                    <button
-                      type="button"
-                      className="canceled-item__tray-action"
-                      onClick={() => onPlaceInTray(item)}
-                    >
-                      <ArrowDownRight size={13} />
-                      <span>Colocar na bandeja</span>
-                    </button>
+                    <span className="canceled-item__status canceled-item__status--pending">
+                      <Clock size={12} /> Aguardando depósito na bandeja
+                    </span>
                   ) : (
                     <span className="canceled-item__status">
-                      <CheckCircle2 size={12} /> Na bandeja de cancelados
+                      <CheckCircle2 size={12} /> Conferido na bandeja de cancelados
                     </span>
                   )}
                 </div>

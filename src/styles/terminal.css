@@ -273,11 +273,63 @@ button:focus-visible {
   padding: 8px 10px;
 }
 
-.header-divider {
-  width: 1px;
-  height: 24px;
-  background: rgba(255, 255, 255, 0.2);
-  margin: 0 2px;
+.header-ctrl-btn--active {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: #93C5FD;
+}
+
+.sim-dropdown-wrapper {
+  position: relative;
+}
+
+.sim-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 300px;
+  background: #FFFFFF;
+  border: 2px solid var(--navy-800);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-elevated);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 950;
+}
+
+.sim-dropdown-item {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--navy-900);
+  text-align: left;
+  transition: background 0.15s;
+}
+
+.sim-dropdown-item:hover {
+  background: var(--navy-50);
+}
+
+.sim-dropdown-item--warn {
+  color: var(--amber-700);
+}
+
+.sim-dropdown-item--warn:hover {
+  background: var(--amber-50);
+}
+
+.sim-dropdown-item--danger {
+  color: var(--red-700);
+}
+
+.sim-dropdown-item--danger:hover {
+  background: var(--red-50);
 }
 
 /* ==========================================================================
@@ -1285,12 +1337,88 @@ button:focus-visible {
   color: var(--navy-700);
 }
 
-.catalog-product-btn__add {
+.drawer-helper-text {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  flex: 1;
+}
+
+.meta-qty-highlight {
+  background: var(--navy-50);
+  color: var(--navy-900);
+  padding: 2px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--navy-100);
+}
+
+.canceled-header-pills {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.canceled-abated-pill {
+  background: #FFFFFF;
+  border: 1px solid var(--red-500);
+  color: var(--red-700);
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+.canceled-item__status--pending {
+  color: var(--amber-700);
+}
+
+/* Seletor de multiplicador (+1 un., +2 un., +3 un.) na Área de Leitura */
+.scan-qty-multiplier {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-surface-subtle);
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-light);
+}
+
+.scan-qty-multiplier__label {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-right: 2px;
+}
+
+.multiplier-pill {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: var(--navy-800);
+  background: #FFFFFF;
+  border: 1px solid var(--border-light);
+  transition: all 0.14s ease;
+}
+
+.multiplier-pill--active {
+  background: var(--navy-900);
+  color: #FFFFFF;
+  border-color: var(--navy-900);
+}
+
+.catalog-product-btn__badge {
   position: absolute;
   top: 5px;
   right: 5px;
-  color: var(--navy-600);
-  opacity: 0.65;
+  background: var(--navy-100);
+  color: var(--navy-900);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 999px;
 }
 
 /* Superfícies Físicas (Balança de Ensacamento vs Bandeja de Cancelados) */
@@ -1645,8 +1773,95 @@ button:focus-visible {
   border-radius: var(--radius-lg);
   padding: 18px 20px;
   display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.confirm-product-header-row {
+  display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 16px;
+}
+
+.confirm-detail-grid--three {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.confirm-detail-box--new-total {
+  background: var(--navy-900);
+  border-color: var(--navy-900);
+  color: #FFFFFF;
+}
+
+.confirm-detail-box--new-total .confirm-detail-label {
+  color: #93C5FD;
+}
+
+.confirm-detail-value--new-total {
+  font-family: var(--font-mono);
+  font-size: 1.28rem;
+  color: #FFFFFF;
+}
+
+/* Demonstrativo Transparente no Modal de Resumo Final */
+.payment-transparency-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.payment-stat-card {
+  background: var(--bg-surface-subtle);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.payment-stat-card--canceled {
+  background: var(--red-50);
+  border-color: #FECACA;
+}
+
+.payment-stat-card--charged {
+  background: var(--navy-900);
+  border-color: var(--navy-900);
+  color: #FFFFFF;
+}
+
+.payment-stat-card__label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.payment-stat-card--charged .payment-stat-card__label {
+  color: #93C5FD;
+}
+
+.payment-stat-card__value {
+  font-family: var(--font-mono);
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--navy-900);
+}
+
+.payment-stat-card--canceled .payment-stat-card__value {
+  color: var(--red-700);
+}
+
+.payment-stat-card--charged .payment-stat-card__value {
+  color: #FFFFFF;
+}
+
+/* Grade de 4 colunas para os 8 produtos no Leitor */
+.catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
 }
 
 .confirm-product-summary__emoji {

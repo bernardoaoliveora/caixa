@@ -1,45 +1,45 @@
 import React from 'react';
-import { Trash2, CheckCircle2, Touchpad, ScanBarcode, Plus, Minus } from 'lucide-react';
-import { formatCurrency } from '../data/products';
+import { Trash2, CheckCircle2, Touchpad, ScanBarcode } from 'lucide-react';
+import { formatCurrency, formatWeight } from '../data/products';
 
 export default function ProductList({
   items,
   selectedInstanceId,
   onSelectItem,
   onRequestCancelItem,
-  onChangeQuantity,
   lastScannedId,
 }) {
+  const totalUnits = items.reduce((acc, item) => acc + item.quantity, 0);
+
   return (
     <section className="panel-card product-list-panel" aria-labelledby="cart-heading">
       <div className="panel-card__header">
         <div>
           <h2 id="cart-heading" className="panel-card__title">
-            Produtos Registrados na Compra
+            Lista de Compra — Produtos Registrados
           </h2>
           <p className="panel-card__hint">
             <Touchpad size={16} aria-hidden="true" />
             <span>
-              <strong>Opção A:</strong> Toque em qualquer produto da lista para exibir a opção{' '}
-              <em>&ldquo;Remover produto&rdquo;</em>
+              Toque em qualquer item da lista para abrir a opção <strong>Remover produto</strong>{' '}
+              (total ou parcial)
             </span>
           </p>
         </div>
         <span className="items-count-pill">
-          {items.reduce((acc, item) => acc + item.quantity, 0)}{' '}
-          {items.reduce((acc, item) => acc + item.quantity, 0) === 1 ? 'item' : 'itens'}
+          {totalUnits} {totalUnits === 1 ? 'unidade' : 'unidades'}
         </span>
       </div>
 
       {items.length === 0 ? (
         <div className="empty-cart-state">
           <div className="empty-cart-state__icon" aria-hidden="true">
-            <ScanBarcode size={48} strokeWidth={1.6} />
+            <ScanBarcode size={44} strokeWidth={1.6} />
           </div>
-          <h3>Nenhum produto registrado ainda</h3>
+          <h3>Nenhum produto registrado na compra</h3>
           <p>
-            Toque nos produtos da <strong>Área de Leitura (Scanner)</strong> abaixo para iniciar
-            o registro da sua compra.
+            Utilize a <strong>Área de Leitura / Adição de Produtos</strong> abaixo para registrar
+            itens no caixa.
           </p>
         </div>
       ) : (
@@ -48,6 +48,7 @@ export default function ProductList({
             const isSelected = selectedInstanceId === item.instanceId;
             const isNewlyScanned = lastScannedId === item.instanceId;
             const subtotal = item.price * item.quantity;
+            const totalItemWeight = item.weightKg * item.quantity;
 
             return (
               <div
@@ -86,15 +87,13 @@ export default function ProductList({
                       )}
                     </div>
                     <div className="registered-item__meta">
-                      <span>
+                      <span className="meta-qty-highlight">
                         Qtd: <strong>{item.quantity} un.</strong>
                       </span>
                       <span className="meta-dot">•</span>
                       <span>Unitário: {formatCurrency(item.price)}</span>
                       <span className="meta-dot">•</span>
-                      <span className="registered-item__touch-cue">
-                        {isSelected ? 'Selecionado' : 'Toque para opções / remover'}
-                      </span>
+                      <span>Peso: {formatWeight(totalItemWeight)}</span>
                     </div>
                   </div>
 
@@ -102,9 +101,13 @@ export default function ProductList({
                     <span className="registered-item__subtotal">
                       {formatCurrency(subtotal)}
                     </span>
-                    {isNewlyScanned && (
+                    {isNewlyScanned ? (
                       <span className="registered-item__scanned-badge">
                         <CheckCircle2 size={13} /> Registrado
+                      </span>
+                    ) : (
+                      <span className="registered-item__touch-cue">
+                        {isSelected ? 'Toque para fechar' : 'Toque para remover'}
                       </span>
                     )}
                   </div>
@@ -112,69 +115,23 @@ export default function ProductList({
 
                 {isSelected && (
                   <div className="registered-item__drawer">
-                    <div className="drawer-quantity-controls">
-                      <span className="drawer-label">
-                        Registrado: <strong>{item.quantity} un.</strong> (Adicionar mais ao carrinho):
-                      </span>
-                      <div className="qty-stepper">
-                        <button
-                          type="button"
-                          className="qty-btn"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onRequestCancelItem(item, 'OptionA', 1);
-                          }}
-                          title="Cancelar 1 unidade (com confirmação)"
-                          aria-label="Cancelar 1 unidade"
-                        >
-                          <Minus size={18} />
-                        </button>
-                        <span className="qty-value">{item.quantity}</span>
-                        <button
-                          type="button"
-                          className="qty-btn"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onChangeQuantity(item.instanceId, item.quantity + 1);
-                          }}
-                          title="Registrar mais 1 unidade deste produto"
-                          aria-label="Aumentar quantidade"
-                        >
-                          <Plus size={18} />
-                        </button>
-                      </div>
-                    </div>
+                    <span className="drawer-helper-text">
+                      {item.quantity > 1
+                        ? `Este item possui ${item.quantity} unidades. Na próxima etapa você poderá escolher quantas unidades remover.`
+                        : 'Confirme na próxima etapa se deseja remover este produto da sua compra.'}
+                    </span>
 
-                    <div className="drawer-action-buttons">
-                      {item.quantity > 1 && (
-                        <button
-                          type="button"
-                          className="btn-remove-partial-inline"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onRequestCancelItem(item, 'OptionA', 1);
-                          }}
-                        >
-                          <Trash2 size={18} />
-                          <span>Cancelar 1 un.</span>
-                        </button>
-                      )}
-                      <button
-                        type="button"
-                        className="btn-remove-inline"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onRequestCancelItem(item, 'OptionA', item.quantity);
-                        }}
-                      >
-                        <Trash2 size={20} />
-                        <span>
-                          {item.quantity > 1
-                            ? `Remover produto (Escolher qtd.)`
-                            : 'Remover produto'}
-                        </span>
-                      </button>
-                    </div>
+                    <button
+                      type="button"
+                      className="btn-remove-inline"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onRequestCancelItem(item, 'OptionA');
+                      }}
+                    >
+                      <Trash2 size={20} />
+                      <span>Remover produto</span>
+                    </button>
                   </div>
                 )}
               </div>
